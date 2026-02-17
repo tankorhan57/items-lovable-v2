@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Settings, Calendar } from "lucide-react";
+import { Settings, Calendar, Flame } from "lucide-react";
 import { format } from "date-fns";
 
 interface PostDay {
@@ -15,6 +15,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<PostDay[]>([]);
   const [streak, setStreak] = useState(0);
+  const [graceUsed, setGraceUsed] = useState(false);
   const [totalPosts, setTotalPosts] = useState(0);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
@@ -27,7 +28,6 @@ export default function Profile() {
   const loadProfileData = async () => {
     if (!user) return;
 
-    // Last 7 days grid
     const days: PostDay[] = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -52,7 +52,6 @@ export default function Profile() {
     }
     setPosts(days);
 
-    // Counts
     const { count: total } = await supabase
       .from("posts")
       .select("*", { count: "exact", head: true })
@@ -62,10 +61,11 @@ export default function Profile() {
 
     const { data: streakData } = await supabase
       .from("streaks")
-      .select("current_streak")
+      .select("current_streak, grace_used")
       .eq("user_id", user.id)
       .single();
     setStreak(streakData?.current_streak || 0);
+    setGraceUsed(streakData?.grace_used || false);
 
     const { count: followers } = await supabase
       .from("follows")
@@ -117,17 +117,22 @@ export default function Profile() {
             <p className="text-lg font-serif text-foreground">{totalPosts}</p>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Items</p>
           </div>
-          <div className="text-center">
+          <button onClick={() => navigate(`/user/${user!.id}/followers`)} className="text-center">
             <p className="text-lg font-serif text-foreground">{followersCount}</p>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Followers</p>
-          </div>
-          <div className="text-center">
+          </button>
+          <button onClick={() => navigate(`/user/${user!.id}/following`)} className="text-center">
             <p className="text-lg font-serif text-foreground">{followingCount}</p>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Following</p>
-          </div>
+          </button>
           <div className="text-center">
-            <p className="text-lg font-serif text-foreground">{streak}</p>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Streak</p>
+            <div className="flex items-center justify-center gap-1">
+              <Flame className="h-4 w-4 text-primary" />
+              <p className="text-lg font-serif text-foreground">{streak}</p>
+            </div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              Streak{graceUsed ? " ⏸" : ""}
+            </p>
           </div>
         </div>
 
@@ -137,7 +142,6 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* 7-day grid */}
       <div className="px-6">
         <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Last 7 days</p>
         <div className="grid grid-cols-7 gap-1.5">

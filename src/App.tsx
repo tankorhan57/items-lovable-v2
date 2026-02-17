@@ -12,6 +12,10 @@ import Explore from "@/pages/Explore";
 import Profile from "@/pages/Profile";
 import Activity from "@/pages/Activity";
 import SettingsPage from "@/pages/SettingsPage";
+import Search from "@/pages/Search";
+import UserProfile from "@/pages/UserProfile";
+import FollowList from "@/pages/FollowList";
+import NoteThread from "@/pages/NoteThread";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -67,14 +71,12 @@ function AppRoutes() {
         <Route path="/activity" element={<Activity />} />
         <Route path="/profile" element={<Profile />} />
       </Route>
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <SettingsPage />
-          </ProtectedRoute>
-        }
-      />
+      {/* Protected but outside AppShell */}
+      <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+      <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+      <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+      <Route path="/user/:userId/:type" element={<ProtectedRoute><FollowList /></ProtectedRoute>} />
+      <Route path="/notes/:postId" element={<ProtectedRoute><NoteThread /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

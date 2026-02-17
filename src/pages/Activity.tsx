@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, UserPlus, MessageSquare, Bell } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Heart, UserPlus, UserCheck, MessageSquare, Bell } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface ActivityItem {
@@ -9,11 +10,14 @@ interface ActivityItem {
   type: string;
   actor_username: string;
   actor_avatar: string | null;
+  actor_id: string;
+  reference_id: string | null;
   created_at: string;
 }
 
 export default function Activity() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,7 +31,7 @@ export default function Activity() {
 
     const { data } = await supabase
       .from("activity")
-      .select("id, type, actor_id, created_at")
+      .select("id, type, actor_id, reference_id, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -38,12 +42,14 @@ export default function Activity() {
         .from("profiles")
         .select("id, username, avatar_url")
         .in("id", actorIds);
-      
+
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
       setItems(data.map(a => ({
         id: a.id,
         type: a.type,
+        actor_id: a.actor_id,
+        reference_id: a.reference_id,
         actor_username: profileMap.get(a.actor_id)?.username || "someone",
         actor_avatar: profileMap.get(a.actor_id)?.avatar_url || null,
         created_at: a.created_at,
@@ -56,6 +62,8 @@ export default function Activity() {
     switch (type) {
       case "appreciation": return Heart;
       case "follow": return UserPlus;
+      case "follow_request": return UserPlus;
+      case "follow_accepted": return UserCheck;
       case "note": return MessageSquare;
       default: return Bell;
     }
@@ -65,8 +73,21 @@ export default function Activity() {
     switch (type) {
       case "appreciation": return `${username} appreciated your photo`;
       case "follow": return `${username} started following you`;
-      case "note": return `${username} left a private note`;
+      case "follow_request": return `${username} requested to follow you`;
+      case "follow_accepted": return `${username} accepted your follow request`;
+      case "note": return `${username} sent you a private note`;
       default: return `${username} interacted with you`;
+    }
+  };
+
+  const handleTap = (item: ActivityItem) => {
+    if (item.type === "follow" || item.type === "follow_request" || item.type === "follow_accepted") {
+      navigate(`/user/${item.actor_id}`);
+    } else if (item.type === "note" && item.reference_id) {
+      navigate(`/notes/${item.reference_id}`);
+    } else if (item.type === "appreciation" && item.reference_id) {
+      // Could navigate to post detail, for now go to profile
+      navigate(`/user/${item.actor_id}`);
     }
   };
 
@@ -103,7 +124,11 @@ export default function Activity() {
           {items.map((item) => {
             const Icon = getIcon(item.type);
             return (
-              <div key={item.id} className="flex items-center gap-3 py-3.5">
+              <button
+                key={item.id}
+                onClick={() => handleTap(item)}
+                className="flex items-center gap-3 py-3.5 w-full text-left"
+              >
                 <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
                   {item.actor_avatar ? (
                     <img src={item.actor_avatar} alt="" className="h-full w-full object-cover" />
@@ -117,7 +142,7 @@ export default function Activity() {
                     {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                   </p>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
