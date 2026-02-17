@@ -95,21 +95,33 @@ export type Database = {
       daily_items: {
         Row: {
           active_date: string
+          category: string
           created_at: string
+          depth_level: number
           id: string
           prompt_text: string
+          tone: string
+          week_number: number | null
         }
         Insert: {
           active_date: string
+          category?: string
           created_at?: string
+          depth_level?: number
           id?: string
           prompt_text: string
+          tone?: string
+          week_number?: number | null
         }
         Update: {
           active_date?: string
+          category?: string
           created_at?: string
+          depth_level?: number
           id?: string
           prompt_text?: string
+          tone?: string
+          week_number?: number | null
         }
         Relationships: []
       }
