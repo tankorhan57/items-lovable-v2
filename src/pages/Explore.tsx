@@ -148,16 +148,29 @@ export default function Explore() {
         </div>
       ) : posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 px-6">
-          <p className="text-sm text-muted-foreground text-center">
-            {tab === "following"
-              ? "No posts from people you follow yet."
-              : "No posts yet today. You're early!"}
-          </p>
+          {tab === "following" ? (
+            <>
+              <h3 className="font-serif text-lg text-foreground mb-1">Your circle is quiet.</h3>
+              <p className="text-sm text-muted-foreground text-center mb-4">
+                Follow someone to see their moments.
+              </p>
+              <button
+                onClick={() => navigate("/search")}
+                className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground"
+              >
+                Discover people
+              </button>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center">
+              No posts yet today. You're early!
+            </p>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-1 p-1">
           {posts.map((post) => (
-            <div key={post.id} className="group relative aspect-square overflow-hidden rounded-sm">
+            <div key={post.id} className="group relative aspect-square overflow-hidden rounded-sm cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
               <img
                 src={post.image_url}
                 alt=""

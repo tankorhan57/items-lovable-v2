@@ -120,9 +120,14 @@ export default function Search() {
             ))}
           </div>
         ) : displayList.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-8 text-center">
-            {query.trim() ? "No users found." : "No suggestions available."}
-          </p>
+          <div className="flex flex-col items-center justify-center py-16">
+            <h3 className="font-serif text-lg text-foreground mb-1">
+              {query.trim() ? "No users found." : "No suggestions available."}
+            </h3>
+            <p className="text-sm text-muted-foreground text-center">
+              {query.trim() ? "Try a different username." : ""}
+            </p>
+          </div>
         ) : (
           <div className="divide-y divide-border">
             {displayList.map(u => <UserRow key={u.id} u={u} />)}

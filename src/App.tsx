@@ -16,6 +16,7 @@ import Search from "@/pages/Search";
 import UserProfile from "@/pages/UserProfile";
 import FollowList from "@/pages/FollowList";
 import NoteThread from "@/pages/NoteThread";
+import PostDetail from "@/pages/PostDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -77,6 +78,7 @@ function AppRoutes() {
       <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
       <Route path="/user/:userId/:type" element={<ProtectedRoute><FollowList /></ProtectedRoute>} />
       <Route path="/notes/:postId" element={<ProtectedRoute><NoteThread /></ProtectedRoute>} />
+      <Route path="/post/:postId" element={<ProtectedRoute><PostDetail /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

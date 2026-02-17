@@ -147,6 +147,9 @@ export default function FollowList() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="text-2xl font-serif text-foreground capitalize">{type}</h1>
+          <span className="text-sm text-muted-foreground mt-1">
+            {loading ? "…" : isFollowers ? users.length + pendingRequests.length : users.length}
+          </span>
         </div>
       </div>
 
