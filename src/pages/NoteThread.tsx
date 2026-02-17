@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Send } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Note {
   id: string;
@@ -71,7 +72,7 @@ export default function NoteThread() {
           <p className="text-sm text-muted-foreground">No notes yet.</p>
         </div>
       ) : (
-        <div className="px-6 space-y-3 pb-6">
+        <div className="px-6 space-y-3 pb-24">
           {notes.map(note => {
             const isMine = note.author_id === user?.id;
             return (
@@ -96,6 +97,65 @@ export default function NoteThread() {
           })}
         </div>
       )}
+
+      <NoteThreadComposer postId={postId || ""} postOwnerId={postOwner || ""} onSent={loadThread} />
+    </div>
+  );
+}
+
+function NoteThreadComposer({ postId, postOwnerId, onSent }: { postId: string; postOwnerId: string; onSent: () => void }) {
+  const { user } = useAuth();
+  const [content, setContent] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const handleSend = async () => {
+    if (!user || !postId || !content.trim()) return;
+    setSending(true);
+    try {
+      const { error } = await supabase.from("private_notes").insert({
+        author_id: user.id,
+        post_id: postId,
+        content: content.trim(),
+      });
+      if (error) throw error;
+
+      if (postOwnerId && postOwnerId !== user.id) {
+        await supabase.from("activity").insert({
+          actor_id: user.id,
+          user_id: postOwnerId,
+          type: "note",
+          reference_id: postId,
+        });
+      }
+
+      setContent("");
+      onSent();
+    } catch {
+      toast.error("Failed to send");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur-lg px-4 py-3">
+      <div className="flex items-center gap-2 max-w-lg mx-auto">
+        <input
+          value={content}
+          onChange={(e) => setContent(e.target.value.slice(0, 140))}
+          placeholder="Reply..."
+          className="flex-1 rounded-full border border-border bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+        />
+        <button
+          onClick={handleSend}
+          disabled={sending || !content.trim()}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-40 transition-opacity"
+        >
+          <Send className="h-4 w-4" />
+        </button>
+      </div>
+      <p className="text-[10px] text-muted-foreground text-center mt-1">{content.length}/140</p>
     </div>
   );
 }

@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Heart, UserPlus, UserCheck, MessageSquare, Bell } from "lucide-react";
+import { Heart, UserPlus, UserCheck, MessageSquare, Bell, Check, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
 
 interface ActivityItem {
   id: string;
@@ -55,7 +56,43 @@ export default function Activity() {
         created_at: a.created_at,
       })));
     }
+    // Mark activity as seen
+    await supabase
+      .from("profiles")
+      .update({ last_seen_activity: new Date().toISOString() })
+      .eq("id", user.id);
+
     setLoading(false);
+  };
+
+  const handleFollowAction = async (item: ActivityItem, accept: boolean) => {
+    try {
+      if (accept) {
+        await supabase.from("follows")
+          .update({ status: "accepted" })
+          .eq("follower_id", item.actor_id)
+          .eq("following_id", user!.id);
+
+        await supabase.from("activity").insert({
+          actor_id: user!.id,
+          user_id: item.actor_id,
+          type: "follow_accepted",
+        });
+        toast.success("Follow request accepted");
+      } else {
+        await supabase.from("follows")
+          .delete()
+          .eq("follower_id", item.actor_id)
+          .eq("following_id", user!.id);
+        toast("Follow request declined");
+      }
+      // Update the item in the list
+      setItems(prev => prev.map(i => 
+        i.id === item.id ? { ...i, type: accept ? "follow_accepted" : "follow_declined" } : i
+      ));
+    } catch {
+      toast.error("Something went wrong");
+    }
   };
 
   const getIcon = (type: string) => {
@@ -141,6 +178,22 @@ export default function Activity() {
                     {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                   </p>
                 </div>
+                {item.type === "follow_request" && (
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleFollowAction(item, true); }}
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleFollowAction(item, false); }}
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-muted-foreground"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
               </button>
             );
           })}

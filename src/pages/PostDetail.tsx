@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft, X, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import AppreciateButton from "@/components/AppreciateButton";
 import AppreciatorsModal from "@/components/AppreciatorsModal";
@@ -126,12 +127,33 @@ export default function PostDetail() {
           </div>
         </div>
 
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">
-            {format(new Date(post.confirmed_at), "MMM d, yyyy • HH:mm")}
-          </p>
-          {post.city && (
-            <p className="text-xs text-muted-foreground">{post.city}</p>
+        <div className="flex items-end justify-between">
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">
+              {format(new Date(post.confirmed_at), "MMM d, yyyy • HH:mm")}
+            </p>
+            {post.city && (
+              <p className="text-xs text-muted-foreground">{post.city}</p>
+            )}
+          </div>
+          {post.user_id === user?.id && (
+            <button
+              onClick={async () => {
+                const { error } = await supabase
+                  .from("posts")
+                  .update({ deleted_at: new Date().toISOString() })
+                  .eq("id", post.id);
+                if (error) {
+                  toast.error("Failed to delete");
+                } else {
+                  toast.success("Post removed");
+                  navigate(-1);
+                }
+              }}
+              className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           )}
         </div>
       </div>

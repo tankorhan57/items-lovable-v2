@@ -28,11 +28,27 @@ export default function Auth() {
           setLoading(false);
           return;
         }
+
+        const cleanUsername = username.toLowerCase().replace(/\s+/g, '_');
+
+        // Check username availability
+        const { data: existing } = await supabase
+          .from("profiles")
+          .select("id")
+          .ilike("username", cleanUsername)
+          .maybeSingle();
+
+        if (existing) {
+          toast.error("That username is already taken");
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: { username: username.toLowerCase().replace(/\s+/g, '_') },
+            data: { username: cleanUsername },
             emailRedirectTo: window.location.origin,
           },
         });

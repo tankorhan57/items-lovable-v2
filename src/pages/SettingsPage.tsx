@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { ArrowLeft, LogOut } from "lucide-react";
+import AvatarUpload from "@/components/AvatarUpload";
 
 export default function SettingsPage() {
   const { profile, user, signOut, refreshProfile } = useAuth();
@@ -49,6 +50,10 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-6">
+          <div className="flex justify-center">
+            <AvatarUpload size="lg" />
+          </div>
+
           <div>
             <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">Display Name</label>
             <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="bg-card" />
