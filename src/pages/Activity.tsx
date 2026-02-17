@@ -86,8 +86,7 @@ export default function Activity() {
     } else if (item.type === "note" && item.reference_id) {
       navigate(`/notes/${item.reference_id}`);
     } else if (item.type === "appreciation" && item.reference_id) {
-      // Could navigate to post detail, for now go to profile
-      navigate(`/user/${item.actor_id}`);
+      navigate(`/post/${item.reference_id}`);
     }
   };
 
@@ -114,9 +113,9 @@ export default function Activity() {
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary mb-3">
             <Bell className="h-6 w-6 text-muted-foreground" />
           </div>
-          <h3 className="font-serif text-lg text-foreground mb-1">No activity yet</h3>
+          <h3 className="font-serif text-lg text-foreground mb-1">No interactions yet.</h3>
           <p className="text-sm text-muted-foreground text-center">
-            When people appreciate your photos or follow you, it'll show up here.
+            When someone appreciates or follows you, it will appear here.
           </p>
         </div>
       ) : (

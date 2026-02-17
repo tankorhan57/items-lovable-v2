@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Calendar, Lock } from "lucide-react";
 import { format } from "date-fns";
 import FollowButton from "@/components/FollowButton";
+import { Badge } from "@/components/ui/badge";
 
 interface UserProfileData {
   id: string;
@@ -31,6 +32,7 @@ export default function UserProfile() {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [canView, setCanView] = useState(false);
+  const [followsYou, setFollowsYou] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -69,6 +71,17 @@ export default function UserProfile() {
 
     const isFollowing = followData?.status === "accepted";
     const viewable = !p.is_private || isFollowing;
+    setCanView(viewable);
+
+    // Check if target follows current user
+    const { data: reverseFollow } = await supabase
+      .from("follows")
+      .select("status")
+      .eq("follower_id", userId)
+      .eq("following_id", user.id)
+      .eq("status", "accepted")
+      .maybeSingle();
+    setFollowsYou(!!reverseFollow);
     setCanView(viewable);
 
     // Counts
@@ -161,6 +174,9 @@ export default function UserProfile() {
             <div>
               <h1 className="text-xl font-serif text-foreground">{profileData.display_name || profileData.username}</h1>
               <p className="text-sm text-muted-foreground">@{profileData.username}</p>
+              {followsYou && (
+                <Badge variant="secondary" className="text-[10px] mt-0.5 font-normal">Follows you</Badge>
+              )}
             </div>
           </div>
           <FollowButton

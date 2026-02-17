@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Settings, Calendar, Flame } from "lucide-react";
+import { Settings, Calendar } from "lucide-react";
 import { format } from "date-fns";
 
 interface PostDay {
@@ -125,15 +125,17 @@ export default function Profile() {
             <p className="text-lg font-serif text-foreground">{followingCount}</p>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Following</p>
           </button>
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1">
-              <Flame className="h-4 w-4 text-primary" />
-              <p className="text-lg font-serif text-foreground">{streak}</p>
+          {streak > 0 && (
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1">
+                <span className="text-base">🔥</span>
+                <p className={`text-lg font-serif ${graceUsed ? 'text-muted-foreground' : 'text-primary'}`}>{streak}</p>
+              </div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                {graceUsed ? "Streak (grace)" : "Streak"}
+              </p>
             </div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              Streak{graceUsed ? " ⏸" : ""}
-            </p>
-          </div>
+          )}
         </div>
 
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-6">
