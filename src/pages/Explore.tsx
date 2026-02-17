@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Lock, MessageSquare, Search as SearchIcon } from "lucide-react";
+import { Lock, MessageSquare, Search as SearchIcon, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AppreciateButton from "@/components/AppreciateButton";
 import AppreciatorsModal from "@/components/AppreciatorsModal";
@@ -27,6 +27,8 @@ export default function Explore() {
   const [appreciatorsPostId, setAppreciatorsPostId] = useState<string | null>(null);
   const [notePostId, setNotePostId] = useState<string | null>(null);
   const [noteOwnerId, setNoteOwnerId] = useState("");
+  const [todayPrompt, setTodayPrompt] = useState<string | null>(null);
+  const [clusterPosts, setClusterPosts] = useState<ExplorePost[]>([]);
 
   useEffect(() => {
     checkAndLoad();
@@ -40,6 +42,15 @@ export default function Explore() {
     setHasPosted(!!posted);
 
     if (posted) {
+      // Fetch today's prompt
+      const today = new Date().toISOString().split("T")[0];
+      const { data: dailyItem } = await supabase
+        .from("daily_items")
+        .select("prompt_text")
+        .eq("active_date", today)
+        .single();
+      setTodayPrompt(dailyItem?.prompt_text || null);
+
       let query = supabase
         .from("posts")
         .select("id, image_url, city, confirmed_at, user_id")
@@ -59,6 +70,7 @@ export default function Explore() {
           query = query.in("user_id", ids);
         } else {
           setPosts([]);
+          setClusterPosts([]);
           setLoading(false);
           return;
         }
@@ -84,8 +96,25 @@ export default function Explore() {
           user: profileMap.get(p.user_id) || { username: "unknown", avatar_url: null },
         }));
         setPosts(enriched);
+
+        // Build collective cluster: up to 5 posts from different cities
+        if (tab === "world") {
+          const seenCities = new Set<string>();
+          const cluster: ExplorePost[] = [];
+          for (const p of enriched) {
+            const city = p.city || "Unknown";
+            if (!seenCities.has(city) && cluster.length < 5) {
+              seenCities.add(city);
+              cluster.push(p);
+            }
+          }
+          setClusterPosts(cluster.length >= 2 ? cluster : []);
+        } else {
+          setClusterPosts([]);
+        }
       } else {
         setPosts([]);
+        setClusterPosts([]);
       }
     }
 
@@ -112,8 +141,13 @@ export default function Explore() {
         <div className="px-6 pt-12 pb-3 flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-serif text-foreground">Explore</h1>
+            {todayPrompt && (
+              <p className="text-xs text-muted-foreground mt-0.5 italic font-serif">
+                "{todayPrompt}"
+              </p>
+            )}
             {posts.length > 0 && (
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-[10px] text-muted-foreground mt-0.5">
                 {posts.length} {posts.length === 1 ? "person" : "people"} captured today
               </p>
             )}
@@ -168,43 +202,77 @@ export default function Explore() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-1 p-1">
-          {posts.map((post) => (
-            <div key={post.id} className="group relative aspect-square overflow-hidden rounded-sm cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
-              <img
-                src={post.image_url}
-                alt=""
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                loading="lazy"
-              />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/60 to-transparent p-3">
-                <div className="flex items-end justify-between">
-                  <button onClick={() => navigate(`/user/${post.user_id}`)} className="text-left">
-                    <p className="text-xs font-medium text-background">{post.user.username}</p>
-                    {post.city && (
-                      <p className="text-[10px] text-background/70">{post.city}</p>
-                    )}
-                  </button>
-                  <div className="flex items-center gap-2">
-                    <AppreciateButton
-                      postId={post.id}
-                      postOwnerId={post.user_id}
-                      onShowAppreciators={() => setAppreciatorsPostId(post.id)}
-                    />
-                    <button
-                      onClick={() => {
-                        setNotePostId(post.id);
-                        setNoteOwnerId(post.user_id);
-                      }}
-                      className="p-1"
-                    >
-                      <MessageSquare className="h-4 w-4 text-background/80" />
+        <div>
+          {/* Collective Cluster — Today Around the World */}
+          {clusterPosts.length >= 2 && (
+            <div className="px-4 py-5 border-b border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                <h3 className="text-sm font-serif text-foreground">Today Around the World</h3>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                {clusterPosts.map((cp) => (
+                  <div
+                    key={cp.id}
+                    className="shrink-0 w-28 cursor-pointer"
+                    onClick={() => navigate(`/post/${cp.id}`)}
+                  >
+                    <div className="aspect-square overflow-hidden rounded-lg">
+                      <img
+                        src={cp.image_url}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1 truncate text-center">
+                      {cp.city || "Somewhere"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Grid */}
+          <div className="grid grid-cols-2 gap-1 p-1">
+            {posts.map((post) => (
+              <div key={post.id} className="group relative aspect-square overflow-hidden rounded-sm cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
+                <img
+                  src={post.image_url}
+                  alt=""
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/60 to-transparent p-3">
+                  <div className="flex items-end justify-between">
+                    <button onClick={(e) => { e.stopPropagation(); navigate(`/user/${post.user_id}`); }} className="text-left">
+                      <p className="text-xs font-medium text-background">{post.user.username}</p>
+                      {post.city && (
+                        <p className="text-[10px] text-background/70">{post.city}</p>
+                      )}
                     </button>
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      <AppreciateButton
+                        postId={post.id}
+                        postOwnerId={post.user_id}
+                        onShowAppreciators={() => setAppreciatorsPostId(post.id)}
+                      />
+                      <button
+                        onClick={() => {
+                          setNotePostId(post.id);
+                          setNoteOwnerId(post.user_id);
+                        }}
+                        className="p-1"
+                      >
+                        <MessageSquare className="h-4 w-4 text-background/80" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 

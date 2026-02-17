@@ -13,6 +13,8 @@ export default function Capture() {
   const [file, setFile] = useState<File | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [todayCount, setTodayCount] = useState(0);
+  const [streakCount, setStreakCount] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -43,6 +45,22 @@ export default function Capture() {
         setConfirmed(true);
         setPreview(post.image_url);
       }
+
+      // Get today's participant count
+      const { count } = await supabase
+        .from("posts")
+        .select("id", { count: "exact", head: true })
+        .eq("daily_item_id", item.id)
+        .not("confirmed_at", "is", null);
+      setTodayCount(count || 0);
+
+      // Get user streak
+      const { data: streak } = await supabase
+        .from("streaks")
+        .select("current_streak")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setStreakCount(streak?.current_streak || 0);
     }
   };
 
@@ -117,6 +135,16 @@ export default function Capture() {
           </div>
           <h2 className="text-2xl font-serif text-foreground mb-1">Captured</h2>
           <p className="text-sm text-muted-foreground">You contributed to today's world.</p>
+          {todayCount > 0 && (
+            <p className="text-xs text-muted-foreground mt-2">
+              {todayCount} {todayCount === 1 ? "person" : "people"} captured today
+            </p>
+          )}
+          {streakCount > 0 && (
+            <p className="text-xs text-primary font-medium mt-1">
+              🔥 {streakCount}-day streak. Keep going.
+            </p>
+          )}
         </div>
         {preview && (
           <div className="w-full max-w-xs overflow-hidden rounded-xl shadow-card">

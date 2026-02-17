@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Settings, Calendar } from "lucide-react";
+import { Settings, Calendar, Archive } from "lucide-react";
 import { format } from "date-fns";
 
 interface PostDay {
@@ -138,9 +138,15 @@ export default function Profile() {
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-6">
-          <Calendar className="h-3.5 w-3.5" />
-          <span>Joined {format(new Date(profile.created_at), "MMM yyyy")}</span>
+        <div className="flex items-center gap-4 text-xs text-muted-foreground mb-6">
+          <div className="flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5" />
+            <span>Joined {format(new Date(profile.created_at), "MMM yyyy")}</span>
+          </div>
+          <button onClick={() => navigate("/archive")} className="flex items-center gap-1.5 hover:text-foreground transition-colors">
+            <Archive className="h-3.5 w-3.5" />
+            <span>Prompt Archive</span>
+          </button>
         </div>
       </div>
 
