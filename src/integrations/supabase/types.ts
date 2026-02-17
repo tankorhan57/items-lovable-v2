@@ -170,6 +170,7 @@ export type Database = {
           confirmed_at: string | null
           created_at: string
           daily_item_id: string
+          deleted_at: string | null
           id: string
           image_url: string
           user_id: string
@@ -179,6 +180,7 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string
           daily_item_id: string
+          deleted_at?: string | null
           id?: string
           image_url: string
           user_id: string
@@ -188,6 +190,7 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string
           daily_item_id?: string
+          deleted_at?: string | null
           id?: string
           image_url?: string
           user_id?: string
@@ -256,6 +259,7 @@ export type Database = {
           display_name: string | null
           id: string
           is_private: boolean
+          last_seen_activity: string | null
           onboarding_completed: boolean
           updated_at: string
           username: string
@@ -267,6 +271,7 @@ export type Database = {
           display_name?: string | null
           id: string
           is_private?: boolean
+          last_seen_activity?: string | null
           onboarding_completed?: boolean
           updated_at?: string
           username: string
@@ -278,6 +283,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_private?: boolean
+          last_seen_activity?: string | null
           onboarding_completed?: boolean
           updated_at?: string
           username?: string
@@ -326,6 +332,16 @@ export type Database = {
     Functions: {
       can_view_post: {
         Args: { p_post_id: string; p_viewer_id: string }
+        Returns: boolean
+      }
+      check_rate_limit: {
+        Args: {
+          p_action: string
+          p_max_count: number
+          p_table: string
+          p_user_id: string
+          p_window_minutes: number
+        }
         Returns: boolean
       }
       has_posted_today: { Args: { p_user_id: string }; Returns: boolean }

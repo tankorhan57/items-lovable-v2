@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Camera, Check, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { compressImage } from "@/lib/image-utils";
 
 export default function Capture() {
   const { user } = useAuth();
@@ -80,12 +81,12 @@ export default function Capture() {
     setConfirming(true);
 
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/${Date.now()}.${ext}`;
+      const compressed = await compressImage(file, 1200, 0.8);
+      const path = `${user.id}/${Date.now()}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from("post-images")
-        .upload(path, file);
+        .upload(path, compressed);
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
