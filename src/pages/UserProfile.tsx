@@ -225,6 +225,15 @@ export default function UserProfile() {
               </div>
             ))}
           </div>
+          {/* Continuity line */}
+          <div className="grid grid-cols-7 gap-1.5 mt-2">
+            {posts.map((day) => (
+              <div
+                key={`line-${day.date}`}
+                className={`h-[2px] rounded-full ${day.image_url ? "bg-foreground/30" : "bg-border"}`}
+              />
+            ))}
+          </div>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 px-6">
