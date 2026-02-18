@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Settings, Calendar, Archive } from "lucide-react";
+import { Settings, Calendar, Archive, Flame } from "lucide-react";
 import { format } from "date-fns";
 import RitualAvatar from "@/components/RitualAvatar";
 
@@ -127,7 +127,10 @@ export default function Profile() {
           </button>
           {streak > 0 && (
             <div className="text-center">
-              <p className={`text-base font-serif ${graceUsed ? 'text-muted-foreground' : 'text-foreground/80'}`}>{streak}</p>
+              <div className="flex items-center justify-center gap-1">
+                <Flame className="h-3.5 w-3.5 text-foreground/50" />
+                <p className={`text-base font-serif ${graceUsed ? 'text-muted-foreground' : 'text-foreground/80'}`}>{streak}</p>
+              </div>
               <p className="text-meta mt-0.5">
                 {graceUsed ? "Streak (grace)" : "Streak"}
               </p>
