@@ -88,7 +88,7 @@ export default function AppreciateButton({ postId, postOwnerId, onCountChange, o
         <Heart
           className={cn(
             "h-5 w-5 transition-all",
-            appreciated ? "fill-primary text-primary" : "text-muted-foreground",
+            appreciated ? "fill-foreground/60 text-foreground/60" : "text-muted-foreground",
             animating && "scale-125"
           )}
         />

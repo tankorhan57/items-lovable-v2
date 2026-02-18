@@ -148,7 +148,7 @@ export default function Activity() {
   return (
     <div ref={containerRef} {...pullHandlers} className="min-h-screen bg-background animate-fade-in overflow-y-auto">
       <div className="px-6 pt-12 pb-4">
-        <h1 className="text-2xl font-serif text-foreground">Activity</h1>
+        <h1 className="text-lg font-serif text-foreground">Activity</h1>
       </div>
 
       <PullIndicator />
@@ -176,11 +176,11 @@ export default function Activity() {
           </p>
         </div>
       ) : (
-        <div className="px-6 divide-y divide-border">
+        <div className="px-6 space-y-2">
           {items.map((item) => {
             const Icon = getIcon(item.type);
             return (
-              <button key={item.id} onClick={() => handleTap(item)} className="flex items-center gap-3 py-3.5 w-full text-left">
+              <button key={item.id} onClick={() => handleTap(item)} className="flex items-center gap-3 p-4 w-full text-left rounded-xl bg-card border border-border transition-ritual active:scale-[0.98]">
                 <RitualAvatar
                   src={item.actor_avatar}
                   fallback={item.actor_username[0]?.toUpperCase()}

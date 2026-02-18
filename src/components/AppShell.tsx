@@ -55,7 +55,7 @@ export default function AppShell() {
                 key={path}
                 onClick={() => navigate(path)}
                 className={cn(
-                  "relative flex flex-col items-center gap-0.5 px-4 py-1.5 transition-colors",
+                  "relative flex flex-col items-center gap-0.5 px-4 py-1.5 transition-ritual active:scale-[0.98]",
                   active ? "text-primary" : "text-muted-foreground"
                 )}
               >

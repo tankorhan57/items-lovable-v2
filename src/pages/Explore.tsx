@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Lock, MessageSquare, Search as SearchIcon, Globe } from "lucide-react";
+import { Lock, Search as SearchIcon, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AppreciateButton from "@/components/AppreciateButton";
 import AppreciatorsModal from "@/components/AppreciatorsModal";
@@ -210,9 +210,9 @@ export default function Explore() {
       <PullIndicator />
 
       {loading ? (
-        <div className="grid grid-cols-2 gap-1 p-1">
+        <div className="grid grid-cols-2 gap-2 p-2">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="aspect-square rounded-sm bg-muted animate-pulse" />
+            <div key={i} className="aspect-square rounded-xl bg-muted animate-pulse" />
           ))}
         </div>
       ) : posts.length === 0 ? (
@@ -237,10 +237,10 @@ export default function Explore() {
       ) : (
         <div>
           {clusterPosts.length >= 2 && (
-            <div className="px-4 py-6 border-b border-border">
+            <div className="px-4 py-8 border-b border-border">
               <div className="flex items-center gap-2 mb-3">
                 <Globe className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-serif text-foreground">Today Around the World</h3>
+                <h3 className="text-lg font-serif text-foreground">Today Around the World</h3>
               </div>
               <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
                 {clusterPosts.map((cp) => (
@@ -255,23 +255,15 @@ export default function Explore() {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-1 p-1">
+          <div className="grid grid-cols-2 gap-2 p-2">
             {posts.map((post) => (
-              <div key={post.id} className="group relative aspect-square overflow-hidden rounded-sm cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
-                <img src={post.image_url} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/50 to-transparent p-3">
-                  <div className="flex items-end justify-between">
-                    <button onClick={(e) => { e.stopPropagation(); navigate(`/user/${post.user_id}`); }} className="text-left">
-                      <p className="text-xs font-medium text-background">{post.user.username}</p>
-                      {post.city && <p className="text-[10px] text-background/60">{post.city}</p>}
-                    </button>
-                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                      <AppreciateButton postId={post.id} postOwnerId={post.user_id} onShowAppreciators={() => setAppreciatorsPostId(post.id)} />
-                      <button onClick={() => { setNotePostId(post.id); setNoteOwnerId(post.user_id); }} className="p-1">
-                        <MessageSquare className="h-4 w-4 text-background/70" />
-                      </button>
-                    </div>
-                  </div>
+              <div key={post.id} className="group relative aspect-square overflow-hidden rounded-xl cursor-pointer active:scale-[0.98] transition-ritual" onClick={() => navigate(`/post/${post.id}`)}>
+                <img src={post.image_url} alt="" className="h-full w-full object-cover transition-transform duration-150 group-hover:scale-[1.02]" loading="lazy" />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/40 to-transparent p-3">
+                  <button onClick={(e) => { e.stopPropagation(); navigate(`/user/${post.user_id}`); }} className="text-left">
+                    <p className="text-xs font-medium text-background">{post.user.username}</p>
+                    {post.city && <p className="text-[10px] text-background/60">{post.city}</p>}
+                  </button>
                 </div>
               </div>
             ))}
