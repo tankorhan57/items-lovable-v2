@@ -2,10 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Camera, Check, RotateCcw } from "lucide-react";
+import { Camera, Check, RotateCcw, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { compressImage } from "@/lib/image-utils";
-
+import { getCurrentPosition } from "@/lib/geolocation";
 export default function Capture() {
   const { user } = useAuth();
   const [prompt, setPrompt] = useState<{ id: string; prompt_text: string } | null>(null);
@@ -16,6 +16,8 @@ export default function Capture() {
   const [confirmed, setConfirmed] = useState(false);
   const [todayCount, setTodayCount] = useState(0);
   const [streakCount, setStreakCount] = useState(0);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [city, setCity] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -63,7 +65,7 @@ export default function Capture() {
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     if (f.size > 10 * 1024 * 1024) {
@@ -72,6 +74,21 @@ export default function Capture() {
     }
     setFile(f);
     setPreview(URL.createObjectURL(f));
+
+    // Request location silently when photo is selected
+    const pos = await getCurrentPosition();
+    if (pos) {
+      setCoords(pos);
+      // Resolve city in background via edge function
+      try {
+        const { data } = await supabase.functions.invoke("reverse-geocode", {
+          body: { lat: pos.lat, lng: pos.lng },
+        });
+        if (data?.city) setCity(data.city);
+      } catch {
+        // Silently fail — city is optional
+      }
+    }
   };
 
   const handleConfirm = async () => {
@@ -96,6 +113,7 @@ export default function Capture() {
         daily_item_id: prompt.id,
         image_url: publicUrl,
         confirmed_at: new Date().toISOString(),
+        city: city || null,
       });
       if (postError) throw postError;
 
@@ -112,6 +130,8 @@ export default function Capture() {
   const handleRetake = () => {
     setFile(null);
     setPreview(null);
+    setCoords(null);
+    setCity(null);
   };
 
   if (!prompt) {
@@ -146,6 +166,12 @@ export default function Capture() {
             <p className="text-meta mt-1">
               {streakCount} days of continuity
             </p>
+          )}
+          {city && (
+            <div className="flex items-center justify-center gap-1 text-meta mt-2">
+              <MapPin className="h-3 w-3" />
+              <span>{city}</span>
+            </div>
           )}
         </div>
         {preview && (
