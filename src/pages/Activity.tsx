@@ -1,10 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Heart, UserPlus, UserCheck, MessageSquare, Bell, Check, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
+
+const PAGE_SIZE = 20;
 
 interface ActivityItem {
   id: string;
@@ -16,47 +20,72 @@ interface ActivityItem {
   created_at: string;
 }
 
+const getIcon = (type: string) => {
+  switch (type) {
+    case "appreciation": return Heart;
+    case "follow": return UserPlus;
+    case "follow_request": return UserPlus;
+    case "follow_accepted": return UserCheck;
+    case "note": return MessageSquare;
+    default: return Bell;
+  }
+};
+
+const getMessage = (type: string, username: string) => {
+  switch (type) {
+    case "appreciation": return `${username} appreciated your photo`;
+    case "follow": return `${username} started following you`;
+    case "follow_request": return `${username} requested to follow you`;
+    case "follow_accepted": return `${username} accepted your follow request`;
+    case "note": return `${username} sent you a private note`;
+    default: return `${username} interacted with you`;
+  }
+};
+
 export default function Activity() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
-  useEffect(() => {
-    if (!user) return;
-    loadActivity();
-  }, [user]);
+  const enrichItems = async (data: any[]): Promise<ActivityItem[]> => {
+    if (data.length === 0) return [];
+    const actorIds = [...new Set(data.map(a => a.actor_id))];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, username, avatar_url")
+      .in("id", actorIds);
+    const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+    return data.map(a => ({
+      id: a.id,
+      type: a.type,
+      actor_id: a.actor_id,
+      reference_id: a.reference_id,
+      actor_username: profileMap.get(a.actor_id)?.username || "someone",
+      actor_avatar: profileMap.get(a.actor_id)?.avatar_url || null,
+      created_at: a.created_at,
+    }));
+  };
 
-  const loadActivity = async () => {
+  const loadInitial = async () => {
     if (!user) return;
+    setLoading(true);
+    setItems([]);
+    setHasMore(true);
 
     const { data } = await supabase
       .from("activity")
       .select("id, type, actor_id, reference_id, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(PAGE_SIZE);
 
-    if (data && data.length > 0) {
-      const actorIds = [...new Set(data.map(a => a.actor_id))];
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, username, avatar_url")
-        .in("id", actorIds);
+    const enriched = await enrichItems(data || []);
+    setItems(enriched);
+    setHasMore((data?.length || 0) >= PAGE_SIZE);
 
-      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
-
-      setItems(data.map(a => ({
-        id: a.id,
-        type: a.type,
-        actor_id: a.actor_id,
-        reference_id: a.reference_id,
-        actor_username: profileMap.get(a.actor_id)?.username || "someone",
-        actor_avatar: profileMap.get(a.actor_id)?.avatar_url || null,
-        created_at: a.created_at,
-      })));
-    }
-    // Mark activity as seen
     await supabase
       .from("profiles")
       .update({ last_seen_activity: new Date().toISOString() })
@@ -65,55 +94,43 @@ export default function Activity() {
     setLoading(false);
   };
 
+  useEffect(() => { if (user) loadInitial(); }, [user]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || items.length === 0 || !user) return;
+    setLoadingMore(true);
+    const cursor = items[items.length - 1].created_at;
+
+    const { data } = await supabase
+      .from("activity")
+      .select("id, type, actor_id, reference_id, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .lt("created_at", cursor)
+      .limit(PAGE_SIZE);
+
+    const enriched = await enrichItems(data || []);
+    setItems(prev => [...prev, ...enriched]);
+    setHasMore((data?.length || 0) >= PAGE_SIZE);
+    setLoadingMore(false);
+  }, [loadingMore, hasMore, items, user]);
+
+  const { containerRef, pullHandlers, PullIndicator } = usePullToRefresh({ onRefresh: loadInitial });
+  const { Sentinel } = useInfiniteScroll({ hasMore, loading: loadingMore, onLoadMore: loadMore });
+
   const handleFollowAction = async (item: ActivityItem, accept: boolean) => {
     try {
       if (accept) {
-        await supabase.from("follows")
-          .update({ status: "accepted" })
-          .eq("follower_id", item.actor_id)
-          .eq("following_id", user!.id);
-
-        await supabase.from("activity").insert({
-          actor_id: user!.id,
-          user_id: item.actor_id,
-          type: "follow_accepted",
-        });
+        await supabase.from("follows").update({ status: "accepted" }).eq("follower_id", item.actor_id).eq("following_id", user!.id);
+        await supabase.from("activity").insert({ actor_id: user!.id, user_id: item.actor_id, type: "follow_accepted" });
         toast.success("Follow request accepted");
       } else {
-        await supabase.from("follows")
-          .delete()
-          .eq("follower_id", item.actor_id)
-          .eq("following_id", user!.id);
+        await supabase.from("follows").delete().eq("follower_id", item.actor_id).eq("following_id", user!.id);
         toast("Follow request declined");
       }
-      // Update the item in the list
-      setItems(prev => prev.map(i => 
-        i.id === item.id ? { ...i, type: accept ? "follow_accepted" : "follow_declined" } : i
-      ));
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, type: accept ? "follow_accepted" : "follow_declined" } : i));
     } catch {
       toast.error("Something went wrong");
-    }
-  };
-
-  const getIcon = (type: string) => {
-    switch (type) {
-      case "appreciation": return Heart;
-      case "follow": return UserPlus;
-      case "follow_request": return UserPlus;
-      case "follow_accepted": return UserCheck;
-      case "note": return MessageSquare;
-      default: return Bell;
-    }
-  };
-
-  const getMessage = (type: string, username: string) => {
-    switch (type) {
-      case "appreciation": return `${username} appreciated your photo`;
-      case "follow": return `${username} started following you`;
-      case "follow_request": return `${username} requested to follow you`;
-      case "follow_accepted": return `${username} accepted your follow request`;
-      case "note": return `${username} sent you a private note`;
-      default: return `${username} interacted with you`;
     }
   };
 
@@ -128,10 +145,12 @@ export default function Activity() {
   };
 
   return (
-    <div className="min-h-screen bg-background animate-fade-in">
+    <div ref={containerRef} {...pullHandlers} className="min-h-screen bg-background animate-fade-in overflow-y-auto">
       <div className="px-6 pt-12 pb-4">
         <h1 className="text-2xl font-serif text-foreground">Activity</h1>
       </div>
+
+      <PullIndicator />
 
       {loading ? (
         <div className="px-6 space-y-4">
@@ -160,11 +179,7 @@ export default function Activity() {
           {items.map((item) => {
             const Icon = getIcon(item.type);
             return (
-              <button
-                key={item.id}
-                onClick={() => handleTap(item)}
-                className="flex items-center gap-3 py-3.5 w-full text-left"
-              >
+              <button key={item.id} onClick={() => handleTap(item)} className="flex items-center gap-3 py-3.5 w-full text-left">
                 <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
                   {item.actor_avatar ? (
                     <img src={item.actor_avatar} alt="" className="h-full w-full object-cover" />
@@ -197,6 +212,7 @@ export default function Activity() {
               </button>
             );
           })}
+          <Sentinel />
         </div>
       )}
     </div>
