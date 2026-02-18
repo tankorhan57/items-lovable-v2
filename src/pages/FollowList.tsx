@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft } from "lucide-react";
 import FollowButton from "@/components/FollowButton";
+import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
+
+const PAGE_SIZE = 20;
 
 interface FollowUser {
   id: string;
@@ -11,6 +15,7 @@ interface FollowUser {
   display_name: string | null;
   avatar_url: string | null;
   is_private: boolean;
+  follow_created_at: string;
 }
 
 export default function FollowList() {
@@ -20,111 +25,144 @@ export default function FollowList() {
   const [users, setUsers] = useState<FollowUser[]>([]);
   const [pendingRequests, setPendingRequests] = useState<FollowUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
   const isOwnProfile = userId === user?.id;
   const isFollowers = type === "followers";
 
-  useEffect(() => {
-    if (userId) loadList();
-  }, [userId, type]);
+  const fetchProfiles = async (ids: string[]): Promise<Map<string, any>> => {
+    if (ids.length === 0) return new Map();
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, username, display_name, avatar_url, is_private")
+      .in("id", ids);
+    return new Map(profiles?.map(p => [p.id, p]) || []);
+  };
 
-  const loadList = async () => {
+  const loadInitial = async () => {
     if (!userId) return;
     setLoading(true);
+    setUsers([]);
+    setHasMore(true);
 
-    if (isFollowers) {
-      // Get accepted followers
-      const { data } = await supabase
+    const col = isFollowers ? "following_id" : "follower_id";
+
+    const { data } = await supabase
+      .from("follows")
+      .select("follower_id, following_id, created_at")
+      .eq(col, userId)
+      .eq("status", "accepted")
+      .order("created_at", { ascending: false })
+      .limit(PAGE_SIZE);
+
+    const ids = data?.map(f => isFollowers ? f.follower_id : f.following_id) || [];
+    const profileMap = await fetchProfiles(ids);
+
+    setUsers(
+      (data || []).map(f => {
+        const id = isFollowers ? f.follower_id : f.following_id;
+        const p = profileMap.get(id);
+        return {
+          id,
+          username: p?.username || "unknown",
+          display_name: p?.display_name || null,
+          avatar_url: p?.avatar_url || null,
+          is_private: p?.is_private || false,
+          follow_created_at: f.created_at,
+        };
+      })
+    );
+    setHasMore((data?.length || 0) >= PAGE_SIZE);
+
+    // Load pending requests for own followers page
+    if (isOwnProfile && isFollowers) {
+      const { data: pending } = await supabase
         .from("follows")
-        .select("follower_id")
+        .select("follower_id, created_at")
         .eq("following_id", userId)
-        .eq("status", "accepted");
+        .eq("status", "pending");
 
-      const ids = data?.map(f => f.follower_id) || [];
-      if (ids.length > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, username, display_name, avatar_url, is_private")
-          .in("id", ids);
-        setUsers(profiles || []);
-      } else {
-        setUsers([]);
-      }
-
-      // If own profile, also load pending requests
-      if (isOwnProfile) {
-        const { data: pending } = await supabase
-          .from("follows")
-          .select("follower_id")
-          .eq("following_id", userId)
-          .eq("status", "pending");
-
-        const pendingIds = pending?.map(f => f.follower_id) || [];
-        if (pendingIds.length > 0) {
-          const { data: pendingProfiles } = await supabase
-            .from("profiles")
-            .select("id, username, display_name, avatar_url, is_private")
-            .in("id", pendingIds);
-          setPendingRequests(pendingProfiles || []);
-        }
-      }
+      const pendingIds = pending?.map(f => f.follower_id) || [];
+      const pendingMap = await fetchProfiles(pendingIds);
+      setPendingRequests(
+        (pending || []).map(f => {
+          const p = pendingMap.get(f.follower_id);
+          return {
+            id: f.follower_id,
+            username: p?.username || "unknown",
+            display_name: p?.display_name || null,
+            avatar_url: p?.avatar_url || null,
+            is_private: p?.is_private || false,
+            follow_created_at: f.created_at,
+          };
+        })
+      );
     } else {
-      const { data } = await supabase
-        .from("follows")
-        .select("following_id")
-        .eq("follower_id", userId)
-        .eq("status", "accepted");
-
-      const ids = data?.map(f => f.following_id) || [];
-      if (ids.length > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, username, display_name, avatar_url, is_private")
-          .in("id", ids);
-        setUsers(profiles || []);
-      } else {
-        setUsers([]);
-      }
+      setPendingRequests([]);
     }
 
     setLoading(false);
   };
 
-  const handleAccept = async (followerId: string) => {
-    if (!user) return;
-    await supabase
-      .from("follows")
-      .update({ status: "accepted" })
-      .eq("follower_id", followerId)
-      .eq("following_id", user.id);
+  useEffect(() => { if (userId) loadInitial(); }, [userId, type]);
 
-    // Activity: accepted
-    await supabase.from("activity").insert({
-      actor_id: user.id,
-      user_id: followerId,
-      type: "follow_accepted",
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || users.length === 0 || !userId) return;
+    setLoadingMore(true);
+    const cursor = users[users.length - 1].follow_created_at;
+
+    const col = isFollowers ? "following_id" : "follower_id";
+
+    const { data } = await supabase
+      .from("follows")
+      .select("follower_id, following_id, created_at")
+      .eq(col, userId)
+      .eq("status", "accepted")
+      .order("created_at", { ascending: false })
+      .lt("created_at", cursor)
+      .limit(PAGE_SIZE);
+
+    const ids = data?.map(f => isFollowers ? f.follower_id : f.following_id) || [];
+    const profileMap = await fetchProfiles(ids);
+
+    const newUsers = (data || []).map(f => {
+      const id = isFollowers ? f.follower_id : f.following_id;
+      const p = profileMap.get(id);
+      return {
+        id,
+        username: p?.username || "unknown",
+        display_name: p?.display_name || null,
+        avatar_url: p?.avatar_url || null,
+        is_private: p?.is_private || false,
+        follow_created_at: f.created_at,
+      };
     });
 
-    loadList();
+    setUsers(prev => [...prev, ...newUsers]);
+    setHasMore((data?.length || 0) >= PAGE_SIZE);
+    setLoadingMore(false);
+  }, [loadingMore, hasMore, users, userId, isFollowers]);
+
+  const { containerRef, pullHandlers, PullIndicator } = usePullToRefresh({ onRefresh: loadInitial });
+  const { Sentinel } = useInfiniteScroll({ hasMore, loading: loadingMore, onLoadMore: loadMore });
+
+  const handleAccept = async (followerId: string) => {
+    if (!user) return;
+    await supabase.from("follows").update({ status: "accepted" }).eq("follower_id", followerId).eq("following_id", user.id);
+    await supabase.from("activity").insert({ actor_id: user.id, user_id: followerId, type: "follow_accepted" });
+    loadInitial();
   };
 
   const handleReject = async (followerId: string) => {
     if (!user) return;
-    await supabase
-      .from("follows")
-      .delete()
-      .eq("follower_id", followerId)
-      .eq("following_id", user.id);
-
+    await supabase.from("follows").delete().eq("follower_id", followerId).eq("following_id", user.id);
     setPendingRequests(prev => prev.filter(p => p.id !== followerId));
   };
 
   const UserRow = ({ u }: { u: FollowUser }) => (
     <div className="flex items-center gap-3 py-3">
-      <button
-        onClick={() => navigate(`/user/${u.id}`)}
-        className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0"
-      >
+      <button onClick={() => navigate(`/user/${u.id}`)} className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
         {u.avatar_url ? (
           <img src={u.avatar_url} alt="" className="h-full w-full object-cover" />
         ) : (
@@ -135,12 +173,12 @@ export default function FollowList() {
         <p className="text-sm font-medium text-foreground truncate">{u.display_name || u.username}</p>
         <p className="text-xs text-muted-foreground">@{u.username}</p>
       </button>
-      <FollowButton targetUserId={u.id} isPrivate={u.is_private} onStatusChange={loadList} />
+      <FollowButton targetUserId={u.id} isPrivate={u.is_private} onStatusChange={loadInitial} />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-background animate-fade-in">
+    <div ref={containerRef} {...pullHandlers} className="min-h-screen bg-background animate-fade-in overflow-y-auto">
       <div className="px-6 pt-12 pb-4">
         <div className="flex items-center gap-3 mb-2">
           <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -152,6 +190,8 @@ export default function FollowList() {
           </span>
         </div>
       </div>
+
+      <PullIndicator />
 
       {loading ? (
         <div className="px-6 space-y-3">
@@ -173,10 +213,7 @@ export default function FollowList() {
               <div className="divide-y divide-border">
                 {pendingRequests.map(u => (
                   <div key={u.id} className="flex items-center gap-3 py-3">
-                    <button
-                      onClick={() => navigate(`/user/${u.id}`)}
-                      className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0"
-                    >
+                    <button onClick={() => navigate(`/user/${u.id}`)} className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
                       {u.avatar_url ? (
                         <img src={u.avatar_url} alt="" className="h-full w-full object-cover" />
                       ) : (
@@ -188,18 +225,8 @@ export default function FollowList() {
                       <p className="text-xs text-muted-foreground">@{u.username}</p>
                     </button>
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => handleAccept(u.id)}
-                        className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => handleReject(u.id)}
-                        className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground"
-                      >
-                        Decline
-                      </button>
+                      <button onClick={() => handleAccept(u.id)} className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">Accept</button>
+                      <button onClick={() => handleReject(u.id)} className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">Decline</button>
                     </div>
                   </div>
                 ))}
@@ -218,6 +245,7 @@ export default function FollowList() {
               {users.map(u => <UserRow key={u.id} u={u} />)}
             </div>
           )}
+          <Sentinel />
         </div>
       )}
     </div>
