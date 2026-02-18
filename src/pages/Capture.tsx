@@ -149,9 +149,9 @@ export default function Capture() {
   if (confirmed) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-6 animate-scale-in">
-        <div className="text-center mb-8">
-          <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-primary/8">
-            <Check className="h-6 w-6 text-primary" />
+        <div className="text-center mb-10">
+          <div className="mx-auto mb-5 flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+            <Check className="h-5 w-5 text-foreground/60" />
           </div>
           {/* Ritual Headline — the prompt is the centerpiece */}
           <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Today's Item</p>
@@ -159,7 +159,7 @@ export default function Capture() {
           <p className="text-sm text-muted-foreground">You contributed to today's world.</p>
           {todayCount > 1 && (
             <p className="text-meta mt-3">
-              {todayCount} others also captured today
+              {todayCount} people participated today
             </p>
           )}
           {streakCount > 1 && (
@@ -175,7 +175,7 @@ export default function Capture() {
           )}
         </div>
         {preview && (
-          <div className="w-full max-w-xs overflow-hidden rounded-xl shadow-card">
+          <div className="w-full max-w-sm overflow-hidden rounded-xl shadow-card">
             <img src={preview} alt="Your capture" className="w-full aspect-square object-cover" />
           </div>
         )}
@@ -188,7 +188,7 @@ export default function Capture() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Today's Item</p>
-          <h2 className="text-3xl font-serif text-foreground italic leading-snug">"{prompt.prompt_text}"</h2>
+          <h2 className="text-2xl font-serif text-foreground italic leading-snug">"{prompt.prompt_text}"</h2>
         </div>
 
         {preview ? (

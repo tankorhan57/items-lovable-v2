@@ -135,6 +135,10 @@
   .text-meta {
     @apply text-xs text-muted-foreground;
   }
+  /* Ritual transition utility */
+  .transition-ritual {
+    @apply transition-all duration-150 ease-out;
+  }
 }
 
 /* Smooth page transitions */
@@ -158,7 +162,7 @@
 }
 
 .animate-scale-in {
-  animation: scale-in 0.3s ease-out;
+  animation: scale-in 0.2s ease-out;
 }
 
 .animate-slide-up {

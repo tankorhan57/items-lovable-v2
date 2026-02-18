@@ -164,7 +164,7 @@ export default function UserProfile() {
               size="lg"
             />
             <div>
-              <h1 className="text-xl">{profileData.display_name || profileData.username}</h1>
+              <h1 className="text-lg font-serif">{profileData.display_name || profileData.username}</h1>
               <p className="text-meta mt-0.5">@{profileData.username}</p>
               {followsYou && (
                 <Badge variant="secondary" className="text-[10px] mt-1 font-normal">Follows you</Badge>
@@ -181,7 +181,7 @@ export default function UserProfile() {
         {profileData.bio && <p className="text-sm text-foreground/80 mb-6">{profileData.bio}</p>}
 
         {/* Softened stats row */}
-        <div className="flex gap-8 mb-6">
+        <div className="flex gap-6 mb-6">
           {canView && (
             <div className="text-center">
               <p className="text-base font-serif text-foreground/80">{totalPosts}</p>

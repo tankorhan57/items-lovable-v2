@@ -10,9 +10,9 @@ interface RitualAvatarProps {
 }
 
 function getStreakRingClass(streak: number): string {
-  if (streak >= 100) return "ring-2 ring-primary/50";
-  if (streak >= 30) return "ring-2 ring-primary/35";
-  if (streak >= 7) return "ring-[1.5px] ring-primary/20";
+  if (streak >= 100) return "ring-2 ring-foreground/30";
+  if (streak >= 30) return "ring-2 ring-foreground/20";
+  if (streak >= 7) return "ring-[1.5px] ring-foreground/12";
   return "";
 }
 
@@ -30,7 +30,7 @@ export default function RitualAvatar({ src, fallback, streak = 0, size = "md", c
       className={cn(
         sizeMap[size],
         ringClass,
-        "transition-all duration-500 ease-out",
+        "transition-all duration-300 ease-out",
         className
       )}
     >

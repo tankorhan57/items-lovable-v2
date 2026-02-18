@@ -98,7 +98,7 @@ export default function Profile() {
               size="lg"
             />
             <div>
-              <h1 className="text-xl">{profile.display_name || profile.username}</h1>
+              <h1 className="text-lg font-serif">{profile.display_name || profile.username}</h1>
               <p className="text-meta mt-0.5">@{profile.username}</p>
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function Profile() {
         )}
 
         {/* Stats row — softened typography, less metric-heavy */}
-        <div className="flex gap-8 mb-6">
+        <div className="flex gap-6 mb-6">
           <div className="text-center">
             <p className="text-base font-serif text-foreground/80">{totalPosts}</p>
             <p className="text-meta mt-0.5">Items</p>
