@@ -6,10 +6,13 @@ import { Camera, Check, RotateCcw, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { compressImage } from "@/lib/image-utils";
 import { getCurrentPosition } from "@/lib/geolocation";
+import DailyImmersion from "@/components/DailyImmersion";
+
 export default function Capture() {
   const { user } = useAuth();
-  const [prompt, setPrompt] = useState<{ id: string; prompt_text: string } | null>(null);
+  const [prompt, setPrompt] = useState<{ id: string; prompt_text: string; category: string } | null>(null);
   const [hasPosted, setHasPosted] = useState(false);
+  const [showImmersion, setShowImmersion] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -47,6 +50,13 @@ export default function Capture() {
         setHasPosted(true);
         setConfirmed(true);
         setPreview(post.image_url);
+      } else {
+        // Show immersion if not posted and not already seen today
+        const utcDate = new Date().toISOString().split("T")[0];
+        const seen = sessionStorage.getItem("immersion_seen");
+        if (seen !== utcDate) {
+          setShowImmersion(true);
+        }
       }
 
       const { count } = await supabase
@@ -145,6 +155,16 @@ export default function Capture() {
     );
   }
 
+  if (showImmersion) {
+    return (
+      <DailyImmersion
+        promptText={prompt.prompt_text}
+        category={prompt.category}
+        onBegin={() => setShowImmersion(false)}
+      />
+    );
+  }
+
   /* ── Confirmation screen: emotional center of the ritual ── */
   if (confirmed) {
     return (
@@ -159,7 +179,7 @@ export default function Capture() {
           <p className="text-sm text-muted-foreground">You contributed to today's world.</p>
           {todayCount > 1 && (
             <p className="text-meta mt-3">
-              {todayCount} people participated today
+              {todayCount} people are seeing the world this way today.
             </p>
           )}
           {streakCount > 1 && (

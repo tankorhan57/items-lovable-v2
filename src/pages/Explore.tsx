@@ -255,19 +255,53 @@ export default function Explore() {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-2 p-2">
-            {posts.map((post) => (
-              <div key={post.id} className="group relative aspect-square overflow-hidden rounded-xl cursor-pointer active:scale-[0.98] transition-ritual" onClick={() => navigate(`/post/${post.id}`)}>
-                <img src={post.image_url} alt="" className="h-full w-full object-cover transition-transform duration-150 group-hover:scale-[1.02]" loading="lazy" />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/40 to-transparent p-3">
-                  <button onClick={(e) => { e.stopPropagation(); navigate(`/user/${post.user_id}`); }} className="text-left">
-                    <p className="text-xs font-medium text-background">{post.user.username}</p>
-                    {post.city && <p className="text-[10px] text-background/60">{post.city}</p>}
-                  </button>
+          {(() => {
+            const getTimeOfDay = (ts: string) => {
+              const h = new Date(ts).getUTCHours();
+              if (h < 12) return "Morning";
+              if (h < 17) return "Afternoon";
+              return "Evening";
+            };
+            let lastTod = "";
+            const elements: React.ReactNode[] = [];
+            let gridBatch: ExplorePost[] = [];
+
+            const flushGrid = () => {
+              if (gridBatch.length === 0) return;
+              const batch = [...gridBatch];
+              elements.push(
+                <div key={`grid-${batch[0].id}`} className="grid grid-cols-2 gap-2 px-2">
+                  {batch.map((post) => (
+                    <div key={post.id} className="group relative aspect-square overflow-hidden rounded-xl cursor-pointer active:scale-[0.98] transition-ritual" onClick={() => navigate(`/post/${post.id}`)}>
+                      <img src={post.image_url} alt="" className="h-full w-full object-cover transition-transform duration-150 group-hover:scale-[1.02]" loading="lazy" />
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/40 to-transparent p-3">
+                        <button onClick={(e) => { e.stopPropagation(); navigate(`/user/${post.user_id}`); }} className="text-left">
+                          <p className="text-xs font-medium text-background">{post.user.username}</p>
+                          {post.city && <p className="text-[10px] text-background/60">{post.city}</p>}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            ))}
-          </div>
+              );
+              gridBatch = [];
+            };
+
+            posts.forEach((post) => {
+              const tod = getTimeOfDay(post.confirmed_at);
+              if (tod !== lastTod) {
+                flushGrid();
+                elements.push(
+                  <p key={`tod-${tod}-${post.id}`} className="text-meta px-4 py-3">{tod}</p>
+                );
+                lastTod = tod;
+              }
+              gridBatch.push(post);
+            });
+            flushGrid();
+
+            return <div className="pb-2">{elements}</div>;
+          })()}
           <Sentinel />
         </div>
       )}
