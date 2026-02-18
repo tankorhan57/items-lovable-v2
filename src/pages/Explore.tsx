@@ -80,7 +80,6 @@ export default function Explore() {
     setHasPosted(!!posted);
     if (!posted) { setLoading(false); return; }
 
-    // Fetch today's prompt
     const today = new Date().toISOString().split("T")[0];
     const { data: dailyItem } = await supabase
       .from("daily_items")
@@ -165,7 +164,7 @@ export default function Explore() {
           <Lock className="h-7 w-7 text-muted-foreground" />
         </div>
         <h2 className="text-2xl font-serif text-foreground mb-2">Post to explore</h2>
-        <p className="text-sm text-muted-foreground text-center max-w-xs">
+        <p className="text-meta text-center max-w-xs">
           Share your photo for today's Item to unlock how others around the world responded.
         </p>
       </div>
@@ -183,12 +182,7 @@ export default function Explore() {
           <div>
             <h1 className="text-2xl font-serif text-foreground">Explore</h1>
             {todayPrompt && (
-              <p className="text-xs text-muted-foreground mt-0.5 italic font-serif">"{todayPrompt}"</p>
-            )}
-            {posts.length > 0 && (
-              <p className="text-[10px] text-muted-foreground mt-0.5">
-                {posts.length} {posts.length === 1 ? "person" : "people"} captured today
-              </p>
+              <p className="text-meta mt-1 italic font-serif">"{todayPrompt}"</p>
             )}
           </div>
           <button onClick={() => navigate("/search")} className="p-2 text-muted-foreground hover:text-foreground transition-colors mt-1">
@@ -202,7 +196,9 @@ export default function Explore() {
               onClick={() => setTab(t)}
               className={cn(
                 "rounded-full px-4 py-1.5 text-xs font-medium transition-colors",
-                tab === t ? "bg-foreground text-background" : "bg-secondary text-muted-foreground"
+                tab === t
+                  ? "bg-foreground/10 text-foreground"
+                  : "bg-transparent text-muted-foreground hover:text-foreground"
               )}
             >
               {t === "world" ? "World" : "Following"}
@@ -224,7 +220,7 @@ export default function Explore() {
           {tab === "following" ? (
             <>
               <h3 className="font-serif text-lg text-foreground mb-1">Your circle is quiet.</h3>
-              <p className="text-sm text-muted-foreground text-center mb-4">
+              <p className="text-meta text-center mb-4">
                 Follow someone to see their moments.
               </p>
               <button
@@ -235,13 +231,13 @@ export default function Explore() {
               </button>
             </>
           ) : (
-            <p className="text-sm text-muted-foreground text-center">No posts yet today. You're early!</p>
+            <p className="text-meta text-center">No posts yet today. You're early!</p>
           )}
         </div>
       ) : (
         <div>
           {clusterPosts.length >= 2 && (
-            <div className="px-4 py-5 border-b border-border">
+            <div className="px-4 py-6 border-b border-border">
               <div className="flex items-center gap-2 mb-3">
                 <Globe className="h-4 w-4 text-muted-foreground" />
                 <h3 className="text-sm font-serif text-foreground">Today Around the World</h3>
@@ -263,16 +259,16 @@ export default function Explore() {
             {posts.map((post) => (
               <div key={post.id} className="group relative aspect-square overflow-hidden rounded-sm cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
                 <img src={post.image_url} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/60 to-transparent p-3">
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/50 to-transparent p-3">
                   <div className="flex items-end justify-between">
                     <button onClick={(e) => { e.stopPropagation(); navigate(`/user/${post.user_id}`); }} className="text-left">
                       <p className="text-xs font-medium text-background">{post.user.username}</p>
-                      {post.city && <p className="text-[10px] text-background/70">{post.city}</p>}
+                      {post.city && <p className="text-[10px] text-background/60">{post.city}</p>}
                     </button>
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                       <AppreciateButton postId={post.id} postOwnerId={post.user_id} onShowAppreciators={() => setAppreciatorsPostId(post.id)} />
                       <button onClick={() => { setNotePostId(post.id); setNoteOwnerId(post.user_id); }} className="p-1">
-                        <MessageSquare className="h-4 w-4 text-background/80" />
+                        <MessageSquare className="h-4 w-4 text-background/70" />
                       </button>
                     </div>
                   </div>

@@ -14,7 +14,6 @@ interface ArchiveItem {
   tone: string;
 }
 
-const depthLabels = ["", "Concrete", "Concrete + Interpretation", "Light Emotional", "Reflective"];
 const categoryEmoji: Record<string, string> = {
   color: "🎨",
   object: "📦",
@@ -58,7 +57,7 @@ export default function Archive() {
           </button>
           <div>
             <h1 className="text-2xl font-serif text-foreground">Archive</h1>
-            <p className="text-xs text-muted-foreground">Last 14 prompts</p>
+            <p className="text-meta mt-0.5">Last 14 prompts</p>
           </div>
         </div>
       </div>
@@ -71,10 +70,10 @@ export default function Archive() {
         </div>
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 px-6">
-          <p className="text-sm text-muted-foreground text-center">No prompts yet.</p>
+          <p className="text-meta text-center">No prompts yet.</p>
         </div>
       ) : (
-        <div className="px-6 py-4 space-y-3">
+        <div className="px-6 py-6 space-y-3">
           {items.map((item, i) => (
             <div
               key={item.id}
@@ -86,7 +85,7 @@ export default function Archive() {
                   <p className="font-serif text-foreground italic text-lg leading-snug">
                     "{item.prompt_text}"
                   </p>
-                  <p className="text-xs text-muted-foreground mt-2">
+                  <p className="text-meta mt-2">
                     {format(new Date(item.active_date + "T00:00:00"), "MMM d, yyyy")}
                   </p>
                 </div>
@@ -100,9 +99,6 @@ export default function Archive() {
                 </span>
                 <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-medium text-secondary-foreground capitalize">
                   {item.tone}
-                </span>
-                <span className="text-[10px] text-muted-foreground">
-                  {depthLabels[item.depth_level]}
                 </span>
               </div>
             </div>

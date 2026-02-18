@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, Lock } from "lucide-react";
 import { format } from "date-fns";
 import FollowButton from "@/components/FollowButton";
 import { Badge } from "@/components/ui/badge";
+import RitualAvatar from "@/components/RitualAvatar";
 
 interface UserProfileData {
   id: string;
@@ -61,7 +62,6 @@ export default function UserProfile() {
     }
     setProfileData(p);
 
-    // Check follow status
     const { data: followData } = await supabase
       .from("follows")
       .select("status")
@@ -73,7 +73,6 @@ export default function UserProfile() {
     const viewable = !p.is_private || isFollowing;
     setCanView(viewable);
 
-    // Check if target follows current user
     const { data: reverseFollow } = await supabase
       .from("follows")
       .select("status")
@@ -82,9 +81,7 @@ export default function UserProfile() {
       .eq("status", "accepted")
       .maybeSingle();
     setFollowsYou(!!reverseFollow);
-    setCanView(viewable);
 
-    // Counts
     const { count: followers } = await supabase
       .from("follows")
       .select("*", { count: "exact", head: true })
@@ -100,7 +97,6 @@ export default function UserProfile() {
     setFollowingCount(following || 0);
 
     if (viewable) {
-      // Load posts for last 7 days
       const days: PostDay[] = [];
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
@@ -155,27 +151,23 @@ export default function UserProfile() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <div className="px-6 pt-12 pb-6">
+      <div className="px-6 pt-12 pb-8">
         <button onClick={() => navigate(-1)} className="mb-4 text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-5 w-5" />
         </button>
 
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
-              {profileData.avatar_url ? (
-                <img src={profileData.avatar_url} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-2xl font-serif text-muted-foreground">
-                  {profileData.username[0]?.toUpperCase()}
-                </span>
-              )}
-            </div>
+            <RitualAvatar
+              src={profileData.avatar_url}
+              fallback={profileData.username[0]?.toUpperCase()}
+              size="lg"
+            />
             <div>
-              <h1 className="text-xl font-serif text-foreground">{profileData.display_name || profileData.username}</h1>
-              <p className="text-sm text-muted-foreground">@{profileData.username}</p>
+              <h1 className="text-xl">{profileData.display_name || profileData.username}</h1>
+              <p className="text-meta mt-0.5">@{profileData.username}</p>
               {followsYou && (
-                <Badge variant="secondary" className="text-[10px] mt-0.5 font-normal">Follows you</Badge>
+                <Badge variant="secondary" className="text-[10px] mt-1 font-normal">Follows you</Badge>
               )}
             </div>
           </div>
@@ -186,34 +178,35 @@ export default function UserProfile() {
           />
         </div>
 
-        {profileData.bio && <p className="text-sm text-foreground/80 mb-5">{profileData.bio}</p>}
+        {profileData.bio && <p className="text-sm text-foreground/80 mb-6">{profileData.bio}</p>}
 
-        <div className="flex gap-6 mb-6">
+        {/* Softened stats row */}
+        <div className="flex gap-8 mb-6">
           {canView && (
             <div className="text-center">
-              <p className="text-lg font-serif text-foreground">{totalPosts}</p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Items</p>
+              <p className="text-base font-serif text-foreground/80">{totalPosts}</p>
+              <p className="text-meta mt-0.5">Items</p>
             </div>
           )}
           <button onClick={() => navigate(`/user/${profileData.id}/followers`)} className="text-center">
-            <p className="text-lg font-serif text-foreground">{followersCount}</p>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Followers</p>
+            <p className="text-base font-serif text-foreground/80">{followersCount}</p>
+            <p className="text-meta mt-0.5">Followers</p>
           </button>
           <button onClick={() => navigate(`/user/${profileData.id}/following`)} className="text-center">
-            <p className="text-lg font-serif text-foreground">{followingCount}</p>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Following</p>
+            <p className="text-base font-serif text-foreground/80">{followingCount}</p>
+            <p className="text-meta mt-0.5">Following</p>
           </button>
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-6">
+        <div className="flex items-center gap-1.5 text-meta">
           <Calendar className="h-3.5 w-3.5" />
           <span>Joined {format(new Date(profileData.created_at), "MMM yyyy")}</span>
         </div>
       </div>
 
       {canView ? (
-        <div className="px-6">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Last 7 days</p>
+        <div className="px-6 pb-8">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Last 7 days</p>
           <div className="grid grid-cols-7 gap-1.5">
             {posts.map((day) => (
               <div key={day.date} className="flex flex-col items-center gap-1">
@@ -239,7 +232,7 @@ export default function UserProfile() {
             <Lock className="h-6 w-6 text-muted-foreground" />
           </div>
           <h3 className="font-serif text-lg text-foreground mb-1">This account is private</h3>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-meta text-center">
             Follow this user to see their photos.
           </p>
         </div>

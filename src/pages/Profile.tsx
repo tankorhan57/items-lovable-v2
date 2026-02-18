@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Settings, Calendar, Archive } from "lucide-react";
 import { format } from "date-fns";
+import RitualAvatar from "@/components/RitualAvatar";
 
 interface PostDay {
   date: string;
@@ -86,21 +87,19 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <div className="px-6 pt-12 pb-6">
+      {/* Header section — 8pt grid spacing */}
+      <div className="px-6 pt-12 pb-8">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
-              {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-2xl font-serif text-muted-foreground">
-                  {profile.username?.[0]?.toUpperCase()}
-                </span>
-              )}
-            </div>
+            <RitualAvatar
+              src={profile.avatar_url}
+              fallback={profile.username?.[0]?.toUpperCase()}
+              streak={streak}
+              size="lg"
+            />
             <div>
-              <h1 className="text-xl font-serif text-foreground">{profile.display_name || profile.username}</h1>
-              <p className="text-sm text-muted-foreground">@{profile.username}</p>
+              <h1 className="text-xl">{profile.display_name || profile.username}</h1>
+              <p className="text-meta mt-0.5">@{profile.username}</p>
             </div>
           </div>
           <button onClick={() => navigate("/settings")} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
@@ -109,36 +108,34 @@ export default function Profile() {
         </div>
 
         {profile.bio && (
-          <p className="text-sm text-foreground/80 mb-5">{profile.bio}</p>
+          <p className="text-sm text-foreground/80 mb-6">{profile.bio}</p>
         )}
 
-        <div className="flex gap-6 mb-6">
+        {/* Stats row — softened typography, less metric-heavy */}
+        <div className="flex gap-8 mb-6">
           <div className="text-center">
-            <p className="text-lg font-serif text-foreground">{totalPosts}</p>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Items</p>
+            <p className="text-base font-serif text-foreground/80">{totalPosts}</p>
+            <p className="text-meta mt-0.5">Items</p>
           </div>
           <button onClick={() => navigate(`/user/${user!.id}/followers`)} className="text-center">
-            <p className="text-lg font-serif text-foreground">{followersCount}</p>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Followers</p>
+            <p className="text-base font-serif text-foreground/80">{followersCount}</p>
+            <p className="text-meta mt-0.5">Followers</p>
           </button>
           <button onClick={() => navigate(`/user/${user!.id}/following`)} className="text-center">
-            <p className="text-lg font-serif text-foreground">{followingCount}</p>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Following</p>
+            <p className="text-base font-serif text-foreground/80">{followingCount}</p>
+            <p className="text-meta mt-0.5">Following</p>
           </button>
           {streak > 0 && (
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1">
-                <span className="text-base">🔥</span>
-                <p className={`text-lg font-serif ${graceUsed ? 'text-muted-foreground' : 'text-primary'}`}>{streak}</p>
-              </div>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              <p className={`text-base font-serif ${graceUsed ? 'text-muted-foreground' : 'text-foreground/80'}`}>{streak}</p>
+              <p className="text-meta mt-0.5">
                 {graceUsed ? "Streak (grace)" : "Streak"}
               </p>
             </div>
           )}
         </div>
 
-        <div className="flex items-center gap-4 text-xs text-muted-foreground mb-6">
+        <div className="flex items-center gap-4 text-meta">
           <div className="flex items-center gap-1.5">
             <Calendar className="h-3.5 w-3.5" />
             <span>Joined {format(new Date(profile.created_at), "MMM yyyy")}</span>
@@ -150,8 +147,9 @@ export default function Profile() {
         </div>
       </div>
 
-      <div className="px-6">
-        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Last 7 days</p>
+      {/* Last 7 days grid */}
+      <div className="px-6 pb-8">
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Last 7 days</p>
         <div className="grid grid-cols-7 gap-1.5">
           {posts.map((day) => (
             <div key={day.date} className="flex flex-col items-center gap-1">

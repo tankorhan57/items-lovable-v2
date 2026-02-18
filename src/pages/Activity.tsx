@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
+import RitualAvatar from "@/components/RitualAvatar";
 
 const PAGE_SIZE = 20;
 
@@ -170,7 +171,7 @@ export default function Activity() {
             <Bell className="h-6 w-6 text-muted-foreground" />
           </div>
           <h3 className="font-serif text-lg text-foreground mb-1">No interactions yet.</h3>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-meta text-center">
             When someone appreciates or follows you, it will appear here.
           </p>
         </div>
@@ -180,16 +181,14 @@ export default function Activity() {
             const Icon = getIcon(item.type);
             return (
               <button key={item.id} onClick={() => handleTap(item)} className="flex items-center gap-3 py-3.5 w-full text-left">
-                <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
-                  {item.actor_avatar ? (
-                    <img src={item.actor_avatar} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </div>
+                <RitualAvatar
+                  src={item.actor_avatar}
+                  fallback={item.actor_username[0]?.toUpperCase()}
+                  size="md"
+                />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-foreground">{getMessage(item.type, item.actor_username)}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-meta">
                     {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                   </p>
                 </div>

@@ -47,7 +47,6 @@ export default function Capture() {
         setPreview(post.image_url);
       }
 
-      // Get today's participant count
       const { count } = await supabase
         .from("posts")
         .select("id", { count: "exact", head: true })
@@ -55,7 +54,6 @@ export default function Capture() {
         .not("confirmed_at", "is", null);
       setTodayCount(count || 0);
 
-      // Get user streak
       const { data: streak } = await supabase
         .from("streaks")
         .select("current_streak")
@@ -121,29 +119,32 @@ export default function Capture() {
       <div className="flex min-h-screen items-center justify-center px-6">
         <div className="text-center animate-fade-in">
           <h2 className="text-2xl font-serif text-foreground mb-2">No prompt today</h2>
-          <p className="text-sm text-muted-foreground">Check back soon — the next Item is on its way.</p>
+          <p className="text-meta">Check back soon — the next Item is on its way.</p>
         </div>
       </div>
     );
   }
 
+  /* ── Confirmation screen: emotional center of the ritual ── */
   if (confirmed) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-6 animate-scale-in">
-        <div className="text-center mb-6">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-            <Check className="h-7 w-7 text-primary" />
+        <div className="text-center mb-8">
+          <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-primary/8">
+            <Check className="h-6 w-6 text-primary" />
           </div>
-          <h2 className="text-2xl font-serif text-foreground mb-1">Captured</h2>
+          {/* Ritual Headline — the prompt is the centerpiece */}
+          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Today's Item</p>
+          <h2 className="text-2xl font-serif text-foreground italic leading-snug mb-4">"{prompt.prompt_text}"</h2>
           <p className="text-sm text-muted-foreground">You contributed to today's world.</p>
-          {todayCount > 0 && (
-            <p className="text-xs text-muted-foreground mt-2">
-              {todayCount} {todayCount === 1 ? "person" : "people"} captured today
+          {todayCount > 1 && (
+            <p className="text-meta mt-3">
+              {todayCount} others also captured today
             </p>
           )}
-          {streakCount > 0 && (
-            <p className="text-xs text-primary font-medium mt-1">
-              🔥 {streakCount}-day streak. Keep going.
+          {streakCount > 1 && (
+            <p className="text-meta mt-1">
+              {streakCount} days of continuity
             </p>
           )}
         </div>
@@ -152,7 +153,6 @@ export default function Capture() {
             <img src={preview} alt="Your capture" className="w-full aspect-square object-cover" />
           </div>
         )}
-        <p className="mt-4 text-xs text-muted-foreground italic font-serif">"{prompt.prompt_text}"</p>
       </div>
     );
   }
@@ -161,8 +161,8 @@ export default function Capture() {
     <div className="flex min-h-screen flex-col items-center justify-center px-6 animate-fade-in">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Today's Item</p>
-          <h2 className="text-3xl font-serif text-foreground italic">"{prompt.prompt_text}"</h2>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Today's Item</p>
+          <h2 className="text-3xl font-serif text-foreground italic leading-snug">"{prompt.prompt_text}"</h2>
         </div>
 
         {preview ? (
@@ -184,7 +184,7 @@ export default function Capture() {
         ) : (
           <button
             onClick={() => fileRef.current?.click()}
-            className="group mx-auto flex h-64 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-card transition-colors hover:border-primary/40 hover:bg-secondary/50"
+            className="group mx-auto flex h-64 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-card transition-colors hover:border-primary/30 hover:bg-secondary/50"
           >
             <Camera className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors mb-3" />
             <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">

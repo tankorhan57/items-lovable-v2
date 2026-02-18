@@ -1,0 +1,64 @@
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+
+interface RitualAvatarProps {
+  src?: string | null;
+  fallback?: string;
+  streak?: number;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}
+
+/**
+ * Avatar with silent continuity indicator.
+ * A subtle warm ring appears based on streak level:
+ * - 0–6: no ring
+ * - 7–29: faint warm ring
+ * - 30–99: slightly warmer ring
+ * - 100+: deeper warm ring
+ * No numbers, badges, glow, or animation. Just calm presence.
+ */
+function getStreakRingClass(streak: number): string {
+  if (streak >= 100) return "ring-2 ring-primary/50";
+  if (streak >= 30) return "ring-2 ring-primary/35";
+  if (streak >= 7) return "ring-[1.5px] ring-primary/20";
+  return "";
+}
+
+const sizeMap = {
+  sm: "h-8 w-8",
+  md: "h-10 w-10",
+  lg: "h-16 w-16",
+} as const;
+
+export default function RitualAvatar({
+  src,
+  fallback,
+  streak = 0,
+  size = "md",
+  className,
+}: RitualAvatarProps) {
+  const ringClass = getStreakRingClass(streak);
+
+  return (
+    <Avatar
+      className={cn(
+        sizeMap[size],
+        ringClass,
+        "transition-all duration-500 ease-out",
+        className
+      )}
+    >
+      {src && (
+        <AvatarImage
+          src={src}
+          alt=""
+          className="transition-opacity duration-300 ease-in-out"
+        />
+      )}
+      <AvatarFallback className="bg-secondary text-muted-foreground font-serif">
+        {fallback || "?"}
+      </AvatarFallback>
+    </Avatar>
+  );
+}

@@ -9,6 +9,7 @@ import AppreciateButton from "@/components/AppreciateButton";
 import AppreciatorsModal from "@/components/AppreciatorsModal";
 import NoteComposer from "@/components/NoteComposer";
 import { MessageSquare } from "lucide-react";
+import RitualAvatar from "@/components/RitualAvatar";
 
 interface PostData {
   id: string;
@@ -102,16 +103,14 @@ export default function PostDetail() {
       <div className="px-6 py-4 space-y-4">
         <div className="flex items-center justify-between">
           <button onClick={() => navigate(`/user/${post.user_id}`)} className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
-              {post.avatar_url ? (
-                <img src={post.avatar_url} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-sm font-serif text-muted-foreground">{post.username[0]?.toUpperCase()}</span>
-              )}
-            </div>
+            <RitualAvatar
+              src={post.avatar_url}
+              fallback={post.username[0]?.toUpperCase()}
+              size="md"
+            />
             <div className="text-left">
               <p className="text-sm font-medium text-foreground">{post.display_name || post.username}</p>
-              <p className="text-xs text-muted-foreground">@{post.username}</p>
+              <p className="text-meta">@{post.username}</p>
             </div>
           </button>
 
@@ -129,11 +128,11 @@ export default function PostDetail() {
 
         <div className="flex items-end justify-between">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-meta">
               {format(new Date(post.confirmed_at), "MMM d, yyyy • HH:mm")}
             </p>
             {post.city && (
-              <p className="text-xs text-muted-foreground">{post.city}</p>
+              <p className="text-meta">{post.city}</p>
             )}
           </div>
           {post.user_id === user?.id && (

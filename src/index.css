@@ -18,40 +18,42 @@
     --popover: 40 30% 98%;
     --popover-foreground: 30 12% 14%;
 
-    --primary: 16 55% 48%;
+    /* Slightly muted primary — less saturated, calmer */
+    --primary: 16 42% 46%;
     --primary-foreground: 40 33% 96%;
 
-    --secondary: 38 28% 90%;
-    --secondary-foreground: 30 12% 20%;
+    --secondary: 38 22% 91%;
+    --secondary-foreground: 30 12% 22%;
 
-    --muted: 35 18% 92%;
+    --muted: 35 16% 92%;
     --muted-foreground: 30 8% 50%;
 
-    --accent: 35 70% 52%;
+    /* Muted accent — warm but grounded */
+    --accent: 35 50% 50%;
     --accent-foreground: 40 33% 96%;
 
-    --destructive: 0 65% 55%;
+    --destructive: 0 55% 50%;
     --destructive-foreground: 40 33% 96%;
 
-    --border: 35 20% 88%;
-    --input: 35 20% 88%;
-    --ring: 16 55% 48%;
+    --border: 35 16% 89%;
+    --input: 35 16% 89%;
+    --ring: 16 42% 46%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 40 30% 97%;
     --sidebar-foreground: 30 10% 30%;
-    --sidebar-primary: 16 55% 48%;
+    --sidebar-primary: 16 42% 46%;
     --sidebar-primary-foreground: 40 33% 96%;
-    --sidebar-accent: 38 28% 92%;
-    --sidebar-accent-foreground: 30 12% 20%;
-    --sidebar-border: 35 20% 88%;
-    --sidebar-ring: 16 55% 48%;
+    --sidebar-accent: 38 22% 92%;
+    --sidebar-accent-foreground: 30 12% 22%;
+    --sidebar-border: 35 16% 89%;
+    --sidebar-ring: 16 42% 46%;
 
     --warm-glow: 0 0% 0% / 0.03;
-    --shadow-soft: 0 2px 12px -2px hsl(30 12% 14% / 0.06);
-    --shadow-card: 0 4px 24px -4px hsl(30 12% 14% / 0.08);
-    --shadow-elevated: 0 8px 40px -8px hsl(30 12% 14% / 0.12);
+    --shadow-soft: 0 2px 12px -2px hsl(30 12% 14% / 0.05);
+    --shadow-card: 0 4px 24px -4px hsl(30 12% 14% / 0.07);
+    --shadow-elevated: 0 8px 40px -8px hsl(30 12% 14% / 0.10);
   }
 
   .dark {
@@ -61,27 +63,27 @@
     --card-foreground: 40 20% 92%;
     --popover: 30 10% 10%;
     --popover-foreground: 40 20% 92%;
-    --primary: 16 55% 55%;
+    --primary: 16 42% 52%;
     --primary-foreground: 30 10% 8%;
     --secondary: 30 10% 15%;
     --secondary-foreground: 40 20% 88%;
     --muted: 30 8% 18%;
     --muted-foreground: 30 10% 55%;
-    --accent: 35 60% 50%;
+    --accent: 35 45% 48%;
     --accent-foreground: 30 10% 8%;
-    --destructive: 0 55% 45%;
+    --destructive: 0 50% 42%;
     --destructive-foreground: 40 20% 92%;
     --border: 30 8% 20%;
     --input: 30 8% 20%;
-    --ring: 16 55% 55%;
+    --ring: 16 42% 52%;
     --sidebar-background: 30 10% 9%;
     --sidebar-foreground: 40 15% 85%;
-    --sidebar-primary: 16 55% 55%;
+    --sidebar-primary: 16 42% 52%;
     --sidebar-primary-foreground: 30 10% 8%;
     --sidebar-accent: 30 8% 15%;
     --sidebar-accent-foreground: 40 15% 85%;
     --sidebar-border: 30 8% 18%;
-    --sidebar-ring: 16 55% 55%;
+    --sidebar-ring: 16 42% 52%;
   }
 }
 
@@ -94,7 +96,21 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
 
-  h1, h2, h3, h4 {
+  /* 3-tier typography system */
+  /* Tier 1: Ritual Headline — serif, used sparingly for high-meaning moments */
+  h1 {
+    font-family: var(--font-serif);
+    @apply text-2xl leading-tight;
+  }
+
+  /* Tier 2: Section Title — serif, consistent across screens */
+  h2, h3 {
+    font-family: var(--font-serif);
+    @apply text-lg leading-snug;
+  }
+
+  /* Tier 3: Meta Text handled by utility classes — text-xs text-muted-foreground */
+  h4 {
     font-family: var(--font-serif);
   }
 }
@@ -114,6 +130,10 @@
   }
   .shadow-elevated {
     box-shadow: var(--shadow-elevated);
+  }
+  /* Meta text utility */
+  .text-meta {
+    @apply text-xs text-muted-foreground;
   }
 }
 
