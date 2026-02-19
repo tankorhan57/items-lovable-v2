@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Lock, Search as SearchIcon, Globe, Play } from "lucide-react";
+import { Lock, Search as SearchIcon, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
-import AppreciateButton from "@/components/AppreciateButton";
 import AppreciatorsModal from "@/components/AppreciatorsModal";
 import NoteComposer from "@/components/NoteComposer";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
+import FollowingFeedTab from "@/components/FollowingFeedTab";
 
 const PAGE_SIZE = 20;
 
@@ -35,7 +35,6 @@ export default function Explore() {
   const [noteOwnerId, setNoteOwnerId] = useState("");
   const [todayPrompt, setTodayPrompt] = useState<string | null>(null);
   const [clusterPosts, setClusterPosts] = useState<ExplorePost[]>([]);
-  const [followingIds, setFollowingIds] = useState<string[] | null>(null);
 
   const enrichPosts = async (rawPosts: any[]): Promise<ExplorePost[]> => {
     if (rawPosts.length === 0) return [];
@@ -53,21 +52,6 @@ export default function Explore() {
       user_id: p.user_id,
       user: profileMap.get(p.user_id) || { username: "unknown", avatar_url: null },
     }));
-  };
-
-  const buildQuery = (ids: string[] | null) => {
-    let query = supabase
-      .from("posts")
-      .select("id, image_url, city, confirmed_at, user_id")
-      .not("confirmed_at", "is", null)
-      .is("deleted_at", null)
-      .order("confirmed_at", { ascending: false })
-      .limit(PAGE_SIZE);
-
-    if (tab === "following" && ids && ids.length > 0) {
-      query = query.in("user_id", ids);
-    }
-    return query;
   };
 
   const loadInitial = async () => {
@@ -88,44 +72,34 @@ export default function Explore() {
       .single();
     setTodayPrompt(dailyItem?.prompt_text || null);
 
-    let ids: string[] | null = null;
-    if (tab === "following") {
-      const { data: following } = await supabase
-        .from("follows")
-        .select("following_id")
-        .eq("follower_id", user.id)
-        .eq("status", "accepted");
-      ids = following?.map(f => f.following_id) || [];
-      setFollowingIds(ids);
-      if (ids.length === 0) {
-        setPosts([]);
-        setClusterPosts([]);
-        setHasMore(false);
-        setLoading(false);
-        return;
-      }
-    } else {
-      setFollowingIds(null);
-    }
+    if (tab === "world") {
+      const query = supabase
+        .from("posts")
+        .select("id, image_url, city, confirmed_at, user_id")
+        .not("confirmed_at", "is", null)
+        .is("deleted_at", null)
+        .order("confirmed_at", { ascending: false })
+        .limit(PAGE_SIZE);
 
-    const { data: rawPosts } = await buildQuery(ids);
-    const enriched = await enrichPosts(rawPosts || []);
-    setPosts(enriched);
-    setHasMore((rawPosts?.length || 0) >= PAGE_SIZE);
+      const { data: rawPosts } = await query;
+      const enriched = await enrichPosts(rawPosts || []);
+      setPosts(enriched);
+      setHasMore((rawPosts?.length || 0) >= PAGE_SIZE);
 
-    if (tab === "world" && enriched.length >= 2) {
-      const seenCities = new Set<string>();
-      const cluster: ExplorePost[] = [];
-      for (const p of enriched) {
-        const city = p.city || "Unknown";
-        if (!seenCities.has(city) && cluster.length < 5) {
-          seenCities.add(city);
-          cluster.push(p);
+      if (enriched.length >= 2) {
+        const seenCities = new Set<string>();
+        const cluster: ExplorePost[] = [];
+        for (const p of enriched) {
+          const city = p.city || "Unknown";
+          if (!seenCities.has(city) && cluster.length < 5) {
+            seenCities.add(city);
+            cluster.push(p);
+          }
         }
+        setClusterPosts(cluster.length >= 2 ? cluster : []);
+      } else {
+        setClusterPosts([]);
       }
-      setClusterPosts(cluster.length >= 2 ? cluster : []);
-    } else {
-      setClusterPosts([]);
     }
 
     setLoading(false);
@@ -134,18 +108,26 @@ export default function Explore() {
   useEffect(() => { loadInitial(); }, [user, tab]);
 
   const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore || posts.length === 0) return;
+    if (loadingMore || !hasMore || posts.length === 0 || tab !== "world") return;
     setLoadingMore(true);
     const cursor = posts[posts.length - 1].confirmed_at;
 
-    let query = buildQuery(followingIds).lt("confirmed_at", cursor);
+    const query = supabase
+      .from("posts")
+      .select("id, image_url, city, confirmed_at, user_id")
+      .not("confirmed_at", "is", null)
+      .is("deleted_at", null)
+      .order("confirmed_at", { ascending: false })
+      .lt("confirmed_at", cursor)
+      .limit(PAGE_SIZE);
+
     const { data: rawPosts } = await query;
     const enriched = await enrichPosts(rawPosts || []);
 
     setPosts(prev => [...prev, ...enriched]);
     setHasMore((rawPosts?.length || 0) >= PAGE_SIZE);
     setLoadingMore(false);
-  }, [loadingMore, hasMore, posts, followingIds, tab]);
+  }, [loadingMore, hasMore, posts, tab]);
 
   const { containerRef, pullHandlers, PullIndicator } = usePullToRefresh({
     onRefresh: loadInitial,
@@ -174,7 +156,7 @@ export default function Explore() {
   return (
     <div
       ref={containerRef}
-      {...pullHandlers}
+      {...(tab === "world" ? pullHandlers : {})}
       className="min-h-screen bg-background animate-fade-in overflow-y-auto"
     >
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -185,14 +167,9 @@ export default function Explore() {
               <p className="text-meta mt-1 italic font-serif">"{todayPrompt}"</p>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => navigate("/friends-feed")} className="p-2 text-muted-foreground hover:text-foreground transition-colors mt-1" title="Friends Feed">
-              <Play className="h-5 w-5" />
-            </button>
-            <button onClick={() => navigate("/search")} className="p-2 text-muted-foreground hover:text-foreground transition-colors mt-1">
-              <SearchIcon className="h-5 w-5" />
-            </button>
-          </div>
+          <button onClick={() => navigate("/search")} className="p-2 text-muted-foreground hover:text-foreground transition-colors mt-1">
+            <SearchIcon className="h-5 w-5" />
+          </button>
         </div>
         <div className="flex gap-1 px-6 pb-3">
           {(["world", "following"] as const).map((t) => (
@@ -212,9 +189,11 @@ export default function Explore() {
         </div>
       </div>
 
-      <PullIndicator />
+      {tab === "world" && <PullIndicator />}
 
-      {loading ? (
+      {tab === "following" ? (
+        <FollowingFeedTab />
+      ) : loading ? (
         <div className="grid grid-cols-2 gap-2 p-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="aspect-square rounded-xl bg-muted animate-pulse" />
@@ -222,22 +201,7 @@ export default function Explore() {
         </div>
       ) : posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 px-6">
-          {tab === "following" ? (
-            <>
-              <h3 className="font-serif text-lg text-foreground mb-1">Your circle is quiet.</h3>
-              <p className="text-meta text-center mb-4">
-                Follow someone to see their moments.
-              </p>
-              <button
-                onClick={() => navigate("/search")}
-                className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground"
-              >
-                Discover people
-              </button>
-            </>
-          ) : (
-            <p className="text-meta text-center">No posts yet today. You're early!</p>
-          )}
+          <p className="text-meta text-center">No posts yet today. You're early!</p>
         </div>
       ) : (
         <div>
