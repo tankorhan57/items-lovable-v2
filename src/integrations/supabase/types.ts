@@ -367,6 +367,38 @@ export type Database = {
           },
         ]
       }
+      user_reaction_config: {
+        Row: {
+          animation_preset_mapping: Json
+          mapping: Json
+          mode: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          animation_preset_mapping?: Json
+          mapping?: Json
+          mode?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          animation_preset_mapping?: Json
+          mapping?: Json
+          mode?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reaction_config_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Lock, Search as SearchIcon, Globe } from "lucide-react";
+import { Lock, Search as SearchIcon, Globe, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AppreciateButton from "@/components/AppreciateButton";
 import AppreciatorsModal from "@/components/AppreciatorsModal";
@@ -185,9 +185,14 @@ export default function Explore() {
               <p className="text-meta mt-1 italic font-serif">"{todayPrompt}"</p>
             )}
           </div>
-          <button onClick={() => navigate("/search")} className="p-2 text-muted-foreground hover:text-foreground transition-colors mt-1">
-            <SearchIcon className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate("/friends-feed")} className="p-2 text-muted-foreground hover:text-foreground transition-colors mt-1" title="Friends Feed">
+              <Play className="h-5 w-5" />
+            </button>
+            <button onClick={() => navigate("/search")} className="p-2 text-muted-foreground hover:text-foreground transition-colors mt-1">
+              <SearchIcon className="h-5 w-5" />
+            </button>
+          </div>
         </div>
         <div className="flex gap-1 px-6 pb-3">
           {(["world", "following"] as const).map((t) => (
