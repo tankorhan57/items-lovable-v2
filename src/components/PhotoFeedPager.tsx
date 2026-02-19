@@ -38,10 +38,13 @@ export default function PhotoFeedPager<T extends FeedItem>({
   // All mutable gesture state in a single ref to avoid re-renders
   const gesture = useRef({
     startY: 0,
+    startX: 0,
     startTime: 0,
     currentY: 0,
     isDragging: false,
     isLocked: false,
+    axisLocked: false,
+    axis: null as "v" | "h" | null,
     pageHeight: 0,
     rafId: 0,
   });
@@ -120,9 +123,12 @@ export default function PhotoFeedPager<T extends FeedItem>({
     const g = gesture.current;
     if (g.isLocked) return;
     g.startY = e.touches[0].clientY;
+    g.startX = e.touches[0].clientX;
     g.currentY = 0;
     g.startTime = Date.now();
     g.isDragging = true;
+    g.axisLocked = false;
+    g.axis = null;
     g.pageHeight = getPageHeight();
 
     // Kill any ongoing transition
@@ -145,7 +151,24 @@ export default function PhotoFeedPager<T extends FeedItem>({
     const g = gesture.current;
     if (!g.isDragging || g.isLocked) return;
 
+    const dx = e.touches[0].clientX - g.startX;
     const dy = e.touches[0].clientY - g.startY;
+
+    // Axis lock: determine once after 10px of movement
+    if (!g.axisLocked) {
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+      if (absDx < 10 && absDy < 10) return;
+      g.axis = absDy >= absDx * 0.7 ? "v" : "h";
+      g.axisLocked = true;
+      if (g.axis === "h") {
+        // Horizontal — abort pager drag, let HorizontalReaction handle it
+        g.isDragging = false;
+        return;
+      }
+    }
+
+    if (g.axis !== "v") return;
 
     // Apply resistance
     let resistance = config.dragResistance;
@@ -198,13 +221,32 @@ export default function PhotoFeedPager<T extends FeedItem>({
     const g = gesture.current;
     if (g.isLocked) return;
     g.startY = e.clientY;
+    g.startX = e.clientX;
     g.currentY = 0;
     g.startTime = Date.now();
     g.isDragging = true;
+    g.axisLocked = false;
+    g.axis = null;
     g.pageHeight = getPageHeight();
 
     const onMove = (ev: MouseEvent) => {
+      if (!g.isDragging) return;
+      const dx = ev.clientX - g.startX;
       const dy = ev.clientY - g.startY;
+
+      if (!g.axisLocked) {
+        const absDx = Math.abs(dx);
+        const absDy = Math.abs(dy);
+        if (absDx < 10 && absDy < 10) return;
+        g.axis = absDy >= absDx * 0.7 ? "v" : "h";
+        g.axisLocked = true;
+        if (g.axis === "h") {
+          g.isDragging = false;
+          return;
+        }
+      }
+
+      if (g.axis !== "v") return;
       let resistance = config.dragResistance;
       if ((currentIndex === 0 && dy > 0) || (currentIndex >= items.length - 1 && dy < 0)) {
         resistance = config.overscrollResistance;
