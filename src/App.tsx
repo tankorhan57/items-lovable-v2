@@ -19,6 +19,8 @@ import NoteThread from "@/pages/NoteThread";
 import PostDetail from "@/pages/PostDetail";
 import Archive from "@/pages/Archive";
 import Install from "@/pages/Install";
+import FriendsFeed from "@/pages/FriendsFeed";
+import ReactionSettings from "@/pages/ReactionSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -82,6 +84,8 @@ function AppRoutes() {
       <Route path="/notes/:postId" element={<ProtectedRoute><NoteThread /></ProtectedRoute>} />
       <Route path="/post/:postId" element={<ProtectedRoute><PostDetail /></ProtectedRoute>} />
       <Route path="/archive" element={<ProtectedRoute><Archive /></ProtectedRoute>} />
+      <Route path="/friends-feed" element={<ProtectedRoute><FriendsFeed /></ProtectedRoute>} />
+      <Route path="/settings/reactions" element={<ProtectedRoute><ReactionSettings /></ProtectedRoute>} />
       <Route path="/install" element={<Install />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

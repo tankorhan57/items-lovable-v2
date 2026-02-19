@@ -10,8 +10,9 @@ import AppreciatorsModal from "@/components/AppreciatorsModal";
 import NoteComposer from "@/components/NoteComposer";
 import { MessageSquare } from "lucide-react";
 import RitualAvatar from "@/components/RitualAvatar";
-import SwipeReaction, { type ReactionDirection } from "@/components/SwipeReaction";
+import SwipeReaction from "@/components/SwipeReaction";
 import ReactionDisplay from "@/components/ReactionDisplay";
+import type { ReactionDirection } from "@/components/SwipeReaction";
 
 interface PostData {
   id: string;

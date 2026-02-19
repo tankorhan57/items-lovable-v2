@@ -1,21 +1,20 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { REACTION_MAP, type ReactionDirection } from "./SwipeReaction";
+import { REACTION_TYPES, type DirectionKey } from "@/hooks/use-reaction-config";
 
 interface ReactionDisplayProps {
   postId: string;
   isOwner: boolean;
-  /** Bumped externally to trigger refresh */
   refreshKey?: number;
+  compact?: boolean;
 }
 
-type ReactionCounts = Record<ReactionDirection, number>;
+type ReactionCounts = Record<string, number>;
 
-const EMPTY: ReactionCounts = { up: 0, down: 0, left: 0, right: 0 };
-const DIRECTIONS: ReactionDirection[] = ["right", "up", "left", "down"];
+const DIRECTIONS: DirectionKey[] = ["right", "up", "left", "down"];
 
-export default function ReactionDisplay({ postId, isOwner, refreshKey }: ReactionDisplayProps) {
-  const [counts, setCounts] = useState<ReactionCounts>(EMPTY);
+export default function ReactionDisplay({ postId, isOwner, refreshKey, compact }: ReactionDisplayProps) {
+  const [counts, setCounts] = useState<ReactionCounts>({});
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
   useEffect(() => {
@@ -29,37 +28,40 @@ export default function ReactionDisplay({ postId, isOwner, refreshKey }: Reactio
       .eq("post_id", postId);
 
     if (!data) return;
-    const c = { ...EMPTY };
+    const c: ReactionCounts = {};
     data.forEach((r) => {
-      const t = r.reaction_type as ReactionDirection;
-      if (t in c) c[t]++;
+      c[r.reaction_type] = (c[r.reaction_type] || 0) + 1;
     });
     setCounts(c);
   };
 
   if (total === 0) return null;
 
+  const getReaction = (id: string) => REACTION_TYPES.find(r => r.id === id);
+
+  if (compact) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] text-white/70">
+        {DIRECTIONS.filter(d => counts[d] > 0).map(d => getReaction(d)?.icon).join("")}
+        {" "}{total}
+      </span>
+    );
+  }
+
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {isOwner
-        ? DIRECTIONS.map(
-            (d) =>
-              counts[d] > 0 && (
-                <span
-                  key={d}
-                  className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 rounded-full px-2 py-0.5"
-                >
-                  <span>{REACTION_MAP[d].icon}</span>
-                  <span>{counts[d]}</span>
-                </span>
-              )
+        ? DIRECTIONS.map(d =>
+            counts[d] > 0 && (
+              <span key={d} className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 rounded-full px-2 py-0.5">
+                <span>{getReaction(d)?.icon}</span>
+                <span>{counts[d]}</span>
+              </span>
+            )
           )
         : (
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 rounded-full px-2 py-0.5">
-            {DIRECTIONS.filter((d) => counts[d] > 0)
-              .map((d) => REACTION_MAP[d].icon)
-              .join("")}{" "}
-            {total}
+            {DIRECTIONS.filter(d => counts[d] > 0).map(d => getReaction(d)?.icon).join("")}{" "}{total}
           </span>
         )}
     </div>

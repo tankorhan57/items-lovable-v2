@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { ArrowLeft, LogOut } from "lucide-react";
+import { ArrowLeft, LogOut, Sparkles } from "lucide-react";
 import AvatarUpload from "@/components/AvatarUpload";
 
 export default function SettingsPage() {
@@ -75,6 +75,14 @@ export default function SettingsPage() {
           <Button onClick={handleSave} className="w-full" disabled={saving}>
             {saving ? "Saving..." : "Save changes"}
           </Button>
+
+          <button
+            onClick={() => navigate("/settings/reactions")}
+            className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors py-3 border-t border-border w-full"
+          >
+            <Sparkles className="h-4 w-4" />
+            Customize reactions
+          </button>
 
           <div className="pt-6 border-t border-border">
             <button
