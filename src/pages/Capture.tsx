@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { mapErrorToUserMessage } from "@/lib/error-utils";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -130,8 +131,8 @@ export default function Capture() {
       setConfirmed(true);
       setHasPosted(true);
       toast.success("Your moment is captured");
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      toast.error(mapErrorToUserMessage(err));
     } finally {
       setConfirming(false);
     }
