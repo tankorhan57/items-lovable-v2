@@ -53,10 +53,10 @@ const EASING_MAP: Record<TransitionStyle, string> = {
  * Active configuration — edit these values to change feed behavior globally.
  */
 export const FEED_ANIM_CONFIG: FeedAnimConfig = {
-  transitionStyle: "soft-snap",
+  transitionStyle: "gentle-spring",
   durationMin: 200,
   durationMax: 320,
-  easing: EASING_MAP["soft-snap"],
+  easing: EASING_MAP["gentle-spring"],
   snapThreshold: 50,
   velocityThreshold: 0.35,
   dragResistance: 0.45,

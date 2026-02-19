@@ -29,7 +29,7 @@ export default function Explore() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [tab, setTab] = useState<"world" | "following">("world");
+  const [tab, setTab] = useState<"world" | "following">("following");
   const [appreciatorsPostId, setAppreciatorsPostId] = useState<string | null>(null);
   const [notePostId, setNotePostId] = useState<string | null>(null);
   const [noteOwnerId, setNoteOwnerId] = useState("");
