@@ -6,6 +6,7 @@ import { isToday, format } from "date-fns";
 import { MessageSquare } from "lucide-react";
 import HorizontalReaction from "@/components/HorizontalReaction";
 import type { DirectionKey } from "@/hooks/use-reaction-config";
+import type { HorizontalSwipeState } from "@/components/PhotoFeedPager";
 type ReactionDirection = DirectionKey;
 import ReactionDisplay from "@/components/ReactionDisplay";
 import NoteComposer from "@/components/NoteComposer";
@@ -42,6 +43,7 @@ export default function FollowingFeedTab() {
   const [reactionRefresh, setReactionRefresh] = useState(0);
   const [notePostId, setNotePostId] = useState<string | null>(null);
   const [showOverview, setShowOverview] = useState(false);
+  const [swipeState, setSwipeState] = useState<HorizontalSwipeState>({ dx: 0, phase: "idle", velocity: 0 });
 
   const loadFeed = useCallback(async () => {
     if (!user) return;
@@ -209,12 +211,14 @@ export default function FollowingFeedTab() {
         currentIndex={currentIndex}
         onIndexChange={handleIndexChange}
         onEndReached={() => {}}
+        onHorizontalSwipe={setSwipeState}
         useContainerHeight
         renderItem={(item, _idx, isActive) => (
           <HorizontalReaction
             currentReaction={reactions[item.id] || null}
             disabled={item.user_id === user?.id}
             onReact={(dir) => handleReact(item.id, dir)}
+            swipeState={isActive ? swipeState : undefined}
           >
             <div className="h-full w-full flex items-center justify-center bg-black">
               <img
