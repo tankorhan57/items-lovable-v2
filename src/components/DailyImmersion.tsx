@@ -3,8 +3,12 @@ import { Camera } from "lucide-react";
 
 const categoryBg: Record<string, string> = {
   color: "bg-[hsl(350,20%,96%)]",
+  light: "bg-[hsl(45,20%,96%)]",
   environment: "bg-[hsl(140,15%,96%)]",
+  surface: "bg-[hsl(30,12%,96%)]",
+  texture: "bg-[hsl(25,14%,96%)]",
   time: "bg-[hsl(220,15%,96%)]",
+  movement: "bg-[hsl(200,12%,96%)]",
 };
 
 interface DailyImmersionProps {
