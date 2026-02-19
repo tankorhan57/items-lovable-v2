@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "pwa-icon-192.png", "pwa-icon-512.png"],
       workbox: {
-        navigateFallback: "offline.html",
+        navigateFallback: null,
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         runtimeCaching: [
