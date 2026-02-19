@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,8 @@ import AppreciatorsModal from "@/components/AppreciatorsModal";
 import NoteComposer from "@/components/NoteComposer";
 import { MessageSquare } from "lucide-react";
 import RitualAvatar from "@/components/RitualAvatar";
+import SwipeReaction, { type ReactionDirection } from "@/components/SwipeReaction";
+import ReactionDisplay from "@/components/ReactionDisplay";
 
 interface PostData {
   id: string;
@@ -30,9 +32,15 @@ export default function PostDetail() {
   const [loading, setLoading] = useState(true);
   const [appreciatorsOpen, setAppreciatorsOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
+  const [myReaction, setMyReaction] = useState<ReactionDirection | null>(null);
+  const [reactionRefresh, setReactionRefresh] = useState(0);
+  const [showNotePrompt, setShowNotePrompt] = useState(false);
 
   useEffect(() => {
-    if (postId && user) loadPost();
+    if (postId && user) {
+      loadPost();
+      loadMyReaction();
+    }
   }, [postId, user]);
 
   const loadPost = async () => {
@@ -60,6 +68,57 @@ export default function PostDetail() {
     });
     setLoading(false);
   };
+
+  const loadMyReaction = async () => {
+    if (!postId || !user) return;
+    const { data } = await supabase
+      .from("post_reactions")
+      .select("reaction_type")
+      .eq("post_id", postId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    setMyReaction((data?.reaction_type as ReactionDirection) || null);
+  };
+
+  const handleReact = useCallback(async (direction: ReactionDirection) => {
+    if (!user || !postId || !post) return;
+    if (post.user_id === user.id) return; // can't react to own
+
+    // If same reaction, remove it
+    if (myReaction === direction) {
+      setMyReaction(null);
+      setReactionRefresh((r) => r + 1);
+      await supabase
+        .from("post_reactions")
+        .delete()
+        .eq("post_id", postId)
+        .eq("user_id", user.id);
+      return;
+    }
+
+    // Optimistic
+    const isNew = !myReaction;
+    setMyReaction(direction);
+    setReactionRefresh((r) => r + 1);
+
+    if (isNew) {
+      await supabase.from("post_reactions").insert({
+        user_id: user.id,
+        post_id: postId,
+        reaction_type: direction,
+      });
+    } else {
+      await supabase
+        .from("post_reactions")
+        .update({ reaction_type: direction })
+        .eq("post_id", postId)
+        .eq("user_id", user.id);
+    }
+
+    // Show subtle note prompt
+    setShowNotePrompt(true);
+    setTimeout(() => setShowNotePrompt(false), 3000);
+  }, [user, postId, post, myReaction]);
 
   if (loading) {
     return (
@@ -91,14 +150,32 @@ export default function PostDetail() {
       </div>
 
       <div className="px-1">
-        <div className="rounded-xl overflow-hidden bg-muted animate-scale-in">
-          <img
-            src={post.image_url}
-            alt=""
-            className="w-full object-cover max-h-[70vh]"
-          />
-        </div>
+        <SwipeReaction
+          currentReaction={myReaction}
+          disabled={post.user_id === user?.id}
+          onReact={handleReact}
+        >
+          <div className="bg-muted animate-scale-in">
+            <img
+              src={post.image_url}
+              alt=""
+              className="w-full object-cover max-h-[70vh]"
+            />
+          </div>
+        </SwipeReaction>
       </div>
+
+      {/* Subtle note prompt after reacting */}
+      {showNotePrompt && (
+        <div className="px-6 pt-2 animate-fade-in">
+          <button
+            onClick={() => { setShowNotePrompt(false); setNoteOpen(true); }}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Add a note? →
+          </button>
+        </div>
+      )}
 
       <div className="px-6 py-4 space-y-4">
         <div className="flex items-center justify-between">
@@ -125,6 +202,12 @@ export default function PostDetail() {
             </button>
           </div>
         </div>
+
+        <ReactionDisplay
+          postId={post.id}
+          isOwner={post.user_id === user?.id}
+          refreshKey={reactionRefresh}
+        />
 
         <div className="flex items-end justify-between">
           <div className="space-y-1">
