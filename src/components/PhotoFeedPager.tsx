@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect, type ReactNode } from "react";
+import { useRef, useCallback, useEffect, type ReactNode } from "react";
 import { FEED_ANIM_CONFIG, getTransitionCSS } from "@/lib/feed-anim-config";
 
 export interface FeedItem {
@@ -14,10 +14,15 @@ interface PhotoFeedPagerProps<T extends FeedItem> {
   onEndReached: () => void;
   renderItem: (item: T, index: number, isActive: boolean) => ReactNode;
   renderOverlay?: (item: T, index: number) => ReactNode;
-  /** If true, uses container height instead of 100vh */
+  /** If true, uses container height instead of 100dvh */
   useContainerHeight?: boolean;
 }
 
+/**
+ * High-performance vertical pager.
+ * All gesture state lives in refs – zero React re-renders during drag.
+ * Transforms are applied directly to the DOM via rAF for 60fps.
+ */
 export default function PhotoFeedPager<T extends FeedItem>({
   items,
   currentIndex,
@@ -27,167 +32,239 @@ export default function PhotoFeedPager<T extends FeedItem>({
   renderOverlay,
   useContainerHeight = false,
 }: PhotoFeedPagerProps<T>) {
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [transitionCSS, setTransitionCSS] = useState("");
-  const [containerHeight, setContainerHeight] = useState(0);
-  const touchRef = useRef({ y: 0, time: 0 });
-  const isLockedRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
 
-  // Measure container
-  useEffect(() => {
-    if (useContainerHeight && containerRef.current) {
-      const measure = () => setContainerHeight(containerRef.current?.clientHeight || 0);
-      measure();
-      const ro = new ResizeObserver(measure);
-      ro.observe(containerRef.current);
-      return () => ro.disconnect();
-    }
-  }, [useContainerHeight]);
+  // All mutable gesture state in a single ref to avoid re-renders
+  const gesture = useRef({
+    startY: 0,
+    startTime: 0,
+    currentY: 0,
+    isDragging: false,
+    isLocked: false,
+    pageHeight: 0,
+    rafId: 0,
+  });
 
   const config = FEED_ANIM_CONFIG;
+
+  // Measure page height
+  const getPageHeight = useCallback(() => {
+    if (useContainerHeight && containerRef.current) {
+      return containerRef.current.clientHeight;
+    }
+    return window.innerHeight;
+  }, [useContainerHeight]);
+
+  // Apply transform directly to DOM – no setState
+  const applyTransform = useCallback((offset: number, transition: string = "none") => {
+    const track = trackRef.current;
+    if (!track) return;
+    track.style.transition = transition;
+    track.style.transform = `translateY(${offset}px)`;
+  }, []);
+
+  // Snap to a page index with animation
+  const snapToPage = useCallback((index: number, velocity: number = 0) => {
+    const g = gesture.current;
+    g.isLocked = true;
+    const h = getPageHeight();
+    const target = -index * h;
+    const css = getTransitionCSS(velocity);
+    applyTransform(target, css);
+
+    // Parse duration from CSS string
+    const dur = parseInt(css.match(/(\d+)ms/)?.[1] || "280");
+    setTimeout(() => {
+      g.isLocked = false;
+    }, dur);
+
+    onIndexChange(index);
+  }, [getPageHeight, applyTransform, onIndexChange]);
 
   // Prefetch images
   useEffect(() => {
     for (let i = currentIndex + 1; i <= Math.min(currentIndex + config.prefetchAhead, items.length - 1); i++) {
       if (items[i]?.image_url) {
         const img = new Image();
-        img.src = items[i].image_url;
+        img.src = items[i].image_url!;
       }
     }
-    // Check if near end
     if (currentIndex >= items.length - 2) {
       onEndReached();
     }
   }, [currentIndex, items.length]);
 
-  const goTo = useCallback((index: number, velocity: number = 0) => {
-    const clamped = Math.max(0, Math.min(items.length, index)); // allow items.length for end-of-feed
-    isLockedRef.current = true;
-    const css = getTransitionCSS(velocity);
-    setTransitionCSS(css);
-    setDragOffset(0);
-    onIndexChange(clamped);
-    const duration = parseInt(css.match(/(\d+)ms/)?.[1] || "280");
-    setTimeout(() => { isLockedRef.current = false; }, duration);
-  }, [items.length, onIndexChange]);
+  // Set initial position when currentIndex changes externally
+  useEffect(() => {
+    const h = getPageHeight();
+    if (h > 0) {
+      applyTransform(-currentIndex * h, "none");
+    }
+  }, [currentIndex, getPageHeight, applyTransform]);
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (isLockedRef.current) return;
-    touchRef.current = { y: e.touches[0].clientY, time: Date.now() };
-    setIsDragging(true);
-    setTransitionCSS("");
-  }, []);
+  // Recalculate on resize
+  useEffect(() => {
+    const onResize = () => {
+      const h = getPageHeight();
+      gesture.current.pageHeight = h;
+      applyTransform(-currentIndex * h, "none");
+    };
+    window.addEventListener("resize", onResize);
+    onResize();
+    return () => window.removeEventListener("resize", onResize);
+  }, [currentIndex, getPageHeight, applyTransform]);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isDragging || isLockedRef.current) return;
-    const dy = e.touches[0].clientY - touchRef.current.y;
+  // ─── Touch handlers ───
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    const g = gesture.current;
+    if (g.isLocked) return;
+    g.startY = e.touches[0].clientY;
+    g.currentY = 0;
+    g.startTime = Date.now();
+    g.isDragging = true;
+    g.pageHeight = getPageHeight();
+
+    // Kill any ongoing transition
+    const track = trackRef.current;
+    if (track) {
+      const matrix = getComputedStyle(track).transform;
+      if (matrix && matrix !== "none") {
+        const values = matrix.match(/matrix.*\((.+)\)/);
+        if (values) {
+          const parts = values[1].split(",").map(Number);
+          const currentTranslateY = parts[5] || 0;
+          track.style.transition = "none";
+          track.style.transform = `translateY(${currentTranslateY}px)`;
+        }
+      }
+    }
+  }, [getPageHeight]);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    const g = gesture.current;
+    if (!g.isDragging || g.isLocked) return;
+
+    const dy = e.touches[0].clientY - g.startY;
 
     // Apply resistance
     let resistance = config.dragResistance;
-    // Extra resistance at boundaries
     if ((currentIndex === 0 && dy > 0) || (currentIndex >= items.length - 1 && dy < 0)) {
       resistance = config.overscrollResistance;
     }
-    setDragOffset(dy * resistance);
-  }, [isDragging, currentIndex, items.length, config]);
 
-  const handleTouchEnd = useCallback(() => {
-    if (!isDragging) return;
-    setIsDragging(false);
+    g.currentY = dy * resistance;
+    const base = -currentIndex * g.pageHeight;
 
-    const elapsed = Date.now() - touchRef.current.time + 1;
-    const velocity = dragOffset / elapsed; // px/ms
+    // Direct DOM manipulation via rAF for smooth 60fps
+    cancelAnimationFrame(g.rafId);
+    g.rafId = requestAnimationFrame(() => {
+      applyTransform(base + g.currentY, "none");
+    });
+  }, [currentIndex, items.length, config.dragResistance, config.overscrollResistance, applyTransform]);
 
-    if (dragOffset < -config.snapThreshold || velocity < -config.velocityThreshold) {
-      // Next
+  const onTouchEnd = useCallback(() => {
+    const g = gesture.current;
+    if (!g.isDragging) return;
+    g.isDragging = false;
+    cancelAnimationFrame(g.rafId);
+
+    const elapsed = Date.now() - g.startTime + 1;
+    const velocity = g.currentY / elapsed; // px/ms
+    const offset = g.currentY;
+
+    if (offset < -config.snapThreshold || velocity < -config.velocityThreshold) {
+      // Swipe up → next
       if (currentIndex < items.length) {
-        goTo(currentIndex + 1, velocity);
+        snapToPage(Math.min(currentIndex + 1, items.length), velocity);
       } else {
-        goTo(currentIndex, velocity);
+        snapToPage(currentIndex, velocity);
       }
-    } else if (dragOffset > config.snapThreshold || velocity > config.velocityThreshold) {
-      // Previous
+    } else if (offset > config.snapThreshold || velocity > config.velocityThreshold) {
+      // Swipe down → previous
       if (currentIndex > 0) {
-        goTo(currentIndex - 1, velocity);
+        snapToPage(currentIndex - 1, velocity);
       } else {
-        goTo(currentIndex, velocity);
+        snapToPage(0, velocity);
       }
     } else {
       // Snap back
-      goTo(currentIndex, 0);
+      snapToPage(currentIndex, 0);
     }
-  }, [isDragging, dragOffset, currentIndex, items.length, goTo, config]);
+  }, [currentIndex, items.length, config.snapThreshold, config.velocityThreshold, snapToPage]);
 
-  // Mouse support for desktop
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (isLockedRef.current) return;
-    touchRef.current = { y: e.clientY, time: Date.now() };
-    setIsDragging(true);
-    setTransitionCSS("");
+  // ─── Mouse support (desktop testing) ───
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    const g = gesture.current;
+    if (g.isLocked) return;
+    g.startY = e.clientY;
+    g.currentY = 0;
+    g.startTime = Date.now();
+    g.isDragging = true;
+    g.pageHeight = getPageHeight();
 
     const onMove = (ev: MouseEvent) => {
-      const dy = ev.clientY - touchRef.current.y;
+      const dy = ev.clientY - g.startY;
       let resistance = config.dragResistance;
       if ((currentIndex === 0 && dy > 0) || (currentIndex >= items.length - 1 && dy < 0)) {
         resistance = config.overscrollResistance;
       }
-      setDragOffset(dy * resistance);
+      g.currentY = dy * resistance;
+      const base = -currentIndex * g.pageHeight;
+      cancelAnimationFrame(g.rafId);
+      g.rafId = requestAnimationFrame(() => {
+        applyTransform(base + g.currentY, "none");
+      });
     };
+
     const onUp = () => {
-      // Trigger same logic as touch end — we'll read from a ref
-      setIsDragging(false);
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
+      // Reuse touch end logic
+      g.isDragging = false;
+      cancelAnimationFrame(g.rafId);
+      const elapsed = Date.now() - g.startTime + 1;
+      const velocity = g.currentY / elapsed;
+      const offset = g.currentY;
+
+      if (offset < -config.snapThreshold || velocity < -config.velocityThreshold) {
+        if (currentIndex < items.length) {
+          snapToPage(Math.min(currentIndex + 1, items.length), velocity);
+        } else {
+          snapToPage(currentIndex, velocity);
+        }
+      } else if (offset > config.snapThreshold || velocity > config.velocityThreshold) {
+        if (currentIndex > 0) snapToPage(currentIndex - 1, velocity);
+        else snapToPage(0, velocity);
+      } else {
+        snapToPage(currentIndex, 0);
+      }
     };
+
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  }, [currentIndex, items.length, config]);
+  }, [currentIndex, items.length, config, getPageHeight, applyTransform, snapToPage]);
 
-  // Handle mouse end via effect when isDragging changes to false
-  useEffect(() => {
-    if (!isDragging && dragOffset !== 0) {
-      const elapsed = Date.now() - touchRef.current.time + 1;
-      const velocity = dragOffset / elapsed;
-
-      if (dragOffset < -config.snapThreshold || velocity < -config.velocityThreshold) {
-        if (currentIndex < items.length) goTo(currentIndex + 1, velocity);
-        else goTo(currentIndex, velocity);
-      } else if (dragOffset > config.snapThreshold || velocity > config.velocityThreshold) {
-        if (currentIndex > 0) goTo(currentIndex - 1, velocity);
-        else goTo(currentIndex, velocity);
-      } else {
-        goTo(currentIndex, 0);
-      }
-    }
-  }, [isDragging]);
-
-  // Determine which items to render (windowed)
+  // Windowed rendering
   const half = Math.floor(config.maxRenderedItems / 2);
   const windowStart = Math.max(0, currentIndex - half);
   const windowEnd = Math.min(items.length - 1, currentIndex + half);
 
-  const useCH = useContainerHeight && containerHeight > 0;
-  const pageUnit = useCH ? `${containerHeight}px` : "100vh";
+  const useCH = useContainerHeight;
+  const pageStyle = useCH ? "h-full" : "h-[100dvh]";
 
   return (
     <div
       ref={containerRef}
       className="absolute inset-0 overflow-hidden touch-none select-none"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onMouseDown={handleMouseDown}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      onMouseDown={onMouseDown}
     >
       <div
-        style={{
-          transform: useCH
-            ? `translateY(${-currentIndex * containerHeight + dragOffset}px)`
-            : `translateY(calc(${-currentIndex} * 100vh + ${dragOffset}px))`,
-          transition: isDragging ? "none" : transitionCSS || getTransitionCSS(),
-          willChange: "transform",
-        }}
+        ref={trackRef}
+        style={{ willChange: "transform" }}
       >
         {items.map((item, idx) => {
           const isInWindow = idx >= windowStart && idx <= windowEnd;
@@ -196,8 +273,8 @@ export default function PhotoFeedPager<T extends FeedItem>({
           return (
             <div
               key={item.id}
-              className="w-full relative"
-              style={{ height: pageUnit, contain: "layout style paint" }}
+              className={`w-full relative ${pageStyle}`}
+              style={{ contain: "layout style paint" }}
             >
               {isInWindow ? (
                 <>
@@ -213,8 +290,8 @@ export default function PhotoFeedPager<T extends FeedItem>({
         {/* End-of-feed sentinel page */}
         <div
           key="end-sentinel"
-          className="w-full"
-          style={{ height: pageUnit, contain: "layout style paint" }}
+          className={`w-full ${pageStyle}`}
+          style={{ contain: "layout style paint" }}
         />
       </div>
     </div>

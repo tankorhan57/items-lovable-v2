@@ -222,12 +222,12 @@ export default function FriendsFeed() {
             onReact={(dir) => handleReact(item.id, dir)}
             longPressMode
           >
-            <div className="h-screen w-full flex items-center justify-center bg-black">
+            <div className="h-full w-full flex items-center justify-center bg-black">
               <img
                 src={item.image_url}
                 alt=""
-                className="max-h-full max-w-full object-contain"
-                style={{ opacity: isActive ? 1 : 0.6, transition: "opacity 200ms ease" }}
+                className="h-full w-full object-cover"
+                style={{ opacity: isActive ? 1 : 0.4, transition: "opacity 200ms ease" }}
               />
             </div>
           </SwipeReaction>

@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { isToday, format } from "date-fns";
-import { MessageSquare, Search as SearchIcon } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import SwipeReaction, { type ReactionDirection } from "@/components/SwipeReaction";
 import ReactionDisplay from "@/components/ReactionDisplay";
 import NoteComposer from "@/components/NoteComposer";
@@ -124,18 +124,15 @@ export default function FollowingFeedTab() {
   const handleReact = useCallback(async (postId: string, direction: ReactionDirection) => {
     if (!user) return;
     const current = reactions[postId];
-
     if (current === direction) {
       setReactions(prev => ({ ...prev, [postId]: null }));
       setReactionRefresh(r => r + 1);
       await supabase.from("post_reactions").delete().eq("post_id", postId).eq("user_id", user.id);
       return;
     }
-
     const isNew = !current;
     setReactions(prev => ({ ...prev, [postId]: direction }));
     setReactionRefresh(r => r + 1);
-
     if (isNew) {
       await supabase.from("post_reactions").insert({ user_id: user.id, post_id: postId, reaction_type: direction });
     } else {
@@ -182,12 +179,8 @@ export default function FollowingFeedTab() {
     );
   }
 
-  const post = posts[currentIndex];
-  const dateLabel = post && isToday(new Date(post.confirmed_at)) ? "Today" : post ? format(new Date(post.confirmed_at), "MMM d") : "";
-
   return (
-    <div className="relative bg-black" style={{ height: "calc(100vh - 145px)" }}>
-      {/* Pager */}
+    <div className="relative bg-black" style={{ height: "calc(100dvh - 145px)" }}>
       <PhotoFeedPager
         items={posts}
         currentIndex={currentIndex}
@@ -201,45 +194,59 @@ export default function FollowingFeedTab() {
             onReact={(dir) => handleReact(item.id, dir)}
             longPressMode
           >
-            <div className="h-full w-full flex items-center justify-center bg-black" style={{ height: "calc(100vh - 145px)" }}>
+            <div className="h-full w-full flex items-center justify-center bg-black">
               <img
                 src={item.image_url}
                 alt=""
-                className="max-h-full max-w-full object-contain"
-                style={{ opacity: isActive ? 1 : 0.5, transition: "opacity 180ms ease" }}
+                className="h-full w-full object-cover"
+                style={{ opacity: isActive ? 1 : 0.4, transition: "opacity 200ms ease" }}
               />
             </div>
           </SwipeReaction>
         )}
-        renderOverlay={(item) => (
-          <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-4 pt-12 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
-            <div className="flex items-end justify-between">
-              <div className="space-y-0.5 pointer-events-auto">
-                <button onClick={() => navigate(`/user/${item.user_id}`)} className="flex items-center gap-2">
-                  {item.avatar_url && (
-                    <img src={item.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover border border-white/20" />
-                  )}
-                  <span className="text-sm font-medium text-white/90">{item.display_name || item.username}</span>
-                </button>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-white/50">{dateLabel}</span>
-                  {item.city && <span className="text-[11px] text-white/40">· {item.city}</span>}
+        renderOverlay={(item) => {
+          const dateLabel = isToday(new Date(item.confirmed_at))
+            ? "Today"
+            : format(new Date(item.confirmed_at), "MMM d");
+
+          return (
+            <div className="absolute bottom-0 left-0 right-0 z-20 px-5 pb-6 pt-20 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
+              <div className="flex items-end justify-between">
+                <div className="space-y-1 pointer-events-auto">
+                  <button onClick={() => navigate(`/user/${item.user_id}`)} className="flex items-center gap-2.5">
+                    {item.avatar_url ? (
+                      <img src={item.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover ring-1 ring-white/20" />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-medium text-white">
+                        {(item.display_name || item.username).charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="text-sm font-medium text-white/95">
+                      {item.display_name || item.username}
+                    </span>
+                  </button>
+                  <div className="flex items-center gap-2 pl-[42px]">
+                    <span className="text-[11px] text-white/50">{dateLabel}</span>
+                    {item.city && <span className="text-[11px] text-white/40">· {item.city}</span>}
+                  </div>
+                  <div className="pl-[42px]">
+                    <ReactionDisplay postId={item.id} isOwner={false} refreshKey={reactionRefresh} compact />
+                  </div>
                 </div>
-                <ReactionDisplay postId={item.id} isOwner={false} refreshKey={reactionRefresh} compact />
+                <button
+                  onClick={() => setNotePostId(item.id)}
+                  className="p-2.5 rounded-full bg-white/10 backdrop-blur-sm text-white/70 hover:text-white transition-colors pointer-events-auto"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                </button>
               </div>
-              <button
-                onClick={() => setNotePostId(item.id)}
-                className="p-2 rounded-full bg-white/10 text-white/70 hover:text-white transition-colors pointer-events-auto"
-              >
-                <MessageSquare className="h-4 w-4" />
-              </button>
             </div>
-          </div>
-        )}
+          );
+        }}
       />
 
-      {/* Progress dots */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-1 pointer-events-none">
+      {/* Minimal progress indicator */}
+      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-[3px] pointer-events-none">
         {Array.from({ length: Math.min(7, posts.length) }).map((_, i) => {
           const startIdx = Math.max(0, Math.min(currentIndex - 3, posts.length - 7));
           const idx = startIdx + i;
@@ -247,12 +254,19 @@ export default function FollowingFeedTab() {
           return (
             <div
               key={idx}
-              className={`w-1 rounded-full transition-all duration-200 ${
-                idx === currentIndex ? "h-3.5 bg-white/60" : "h-1.5 bg-white/20"
+              className={`w-[3px] rounded-full transition-all duration-300 ${
+                idx === currentIndex ? "h-4 bg-white/70" : "h-[5px] bg-white/20"
               }`}
             />
           );
         })}
+      </div>
+
+      {/* Post counter */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+        <span className="text-[10px] font-medium text-white/40 tabular-nums">
+          {currentIndex + 1} / {posts.length}
+        </span>
       </div>
 
       <NoteComposer
