@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MessageSquare } from "lucide-react";
 import { isToday, format } from "date-fns";
-import SwipeReaction, { type ReactionDirection } from "@/components/SwipeReaction";
+import HorizontalReaction from "@/components/HorizontalReaction";
+import type { DirectionKey } from "@/hooks/use-reaction-config";
+type ReactionDirection = DirectionKey;
 import ReactionDisplay from "@/components/ReactionDisplay";
 import NoteComposer from "@/components/NoteComposer";
 import PhotoFeedPager from "@/components/PhotoFeedPager";
@@ -216,11 +218,10 @@ export default function FriendsFeed() {
         onIndexChange={handleIndexChange}
         onEndReached={() => {}}
         renderItem={(item, _idx, isActive) => (
-          <SwipeReaction
+          <HorizontalReaction
             currentReaction={reactions[item.id] || null}
             disabled={item.user_id === user?.id}
             onReact={(dir) => handleReact(item.id, dir)}
-            longPressMode
           >
             <div className="h-full w-full flex items-center justify-center bg-black">
               <img
@@ -230,7 +231,7 @@ export default function FriendsFeed() {
                 style={{ opacity: isActive ? 1 : 0.4, transition: "opacity 200ms ease" }}
               />
             </div>
-          </SwipeReaction>
+          </HorizontalReaction>
         )}
         renderOverlay={(item) => (
           <div className="absolute bottom-0 left-0 right-0 z-20 px-5 pb-10 pt-16 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">

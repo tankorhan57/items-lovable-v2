@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { isToday, format } from "date-fns";
 import { MessageSquare } from "lucide-react";
-import SwipeReaction, { type ReactionDirection } from "@/components/SwipeReaction";
+import HorizontalReaction from "@/components/HorizontalReaction";
+import type { DirectionKey } from "@/hooks/use-reaction-config";
+type ReactionDirection = DirectionKey;
 import ReactionDisplay from "@/components/ReactionDisplay";
 import NoteComposer from "@/components/NoteComposer";
 import PhotoFeedPager from "@/components/PhotoFeedPager";
@@ -209,11 +211,10 @@ export default function FollowingFeedTab() {
         onEndReached={() => {}}
         useContainerHeight
         renderItem={(item, _idx, isActive) => (
-          <SwipeReaction
+          <HorizontalReaction
             currentReaction={reactions[item.id] || null}
             disabled={item.user_id === user?.id}
             onReact={(dir) => handleReact(item.id, dir)}
-            longPressMode
           >
             <div className="h-full w-full flex items-center justify-center bg-black">
               <img
@@ -223,7 +224,7 @@ export default function FollowingFeedTab() {
                 style={{ opacity: isActive ? 1 : 0.4, transition: "opacity 200ms ease" }}
               />
             </div>
-          </SwipeReaction>
+          </HorizontalReaction>
         )}
         renderOverlay={(item) => {
           const dateLabel = isToday(new Date(item.confirmed_at))
