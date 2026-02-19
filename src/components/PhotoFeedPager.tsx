@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect, type ReactNode } from "react";
+import { useRef, useCallback, useEffect, type ReactNode } from "react";
 import { FEED_ANIM_CONFIG, getTransitionCSS } from "@/lib/feed-anim-config";
 
 export interface FeedItem {
@@ -34,7 +34,6 @@ export default function PhotoFeedPager<T extends FeedItem>({
 }: PhotoFeedPagerProps<T>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const [containerHeight, setContainerHeight] = useState(0);
 
   // All mutable gesture state in a single ref to avoid re-renders
   const gesture = useRef({
@@ -49,26 +48,13 @@ export default function PhotoFeedPager<T extends FeedItem>({
 
   const config = FEED_ANIM_CONFIG;
 
-  // Measure container height with ResizeObserver
-  useEffect(() => {
-    if (!useContainerHeight || !containerRef.current) return;
-    const measure = () => setContainerHeight(containerRef.current?.clientHeight || 0);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(containerRef.current);
-    return () => ro.disconnect();
-  }, [useContainerHeight]);
-
   // Measure page height
   const getPageHeight = useCallback(() => {
-    if (useContainerHeight && containerHeight > 0) {
-      return containerHeight;
-    }
     if (useContainerHeight && containerRef.current) {
       return containerRef.current.clientHeight;
     }
     return window.innerHeight;
-  }, [useContainerHeight, containerHeight]);
+  }, [useContainerHeight]);
 
   // Apply transform directly to DOM – no setState
   const applyTransform = useCallback((offset: number, transition: string = "none") => {
@@ -264,8 +250,8 @@ export default function PhotoFeedPager<T extends FeedItem>({
   const windowStart = Math.max(0, currentIndex - half);
   const windowEnd = Math.min(items.length - 1, currentIndex + half);
 
-  const useCH = useContainerHeight && containerHeight > 0;
-  const pageHeight = useCH ? containerHeight : undefined;
+  const useCH = useContainerHeight;
+  const pageStyle = useCH ? "h-full" : "h-[100dvh]";
 
   return (
     <div
@@ -287,11 +273,8 @@ export default function PhotoFeedPager<T extends FeedItem>({
           return (
             <div
               key={item.id}
-              className="w-full relative"
-              style={{
-                height: useCH ? `${pageHeight}px` : "100dvh",
-                contain: "layout style paint",
-              }}
+              className={`w-full relative ${pageStyle}`}
+              style={{ contain: "layout style paint" }}
             >
               {isInWindow ? (
                 <>
@@ -307,11 +290,8 @@ export default function PhotoFeedPager<T extends FeedItem>({
         {/* End-of-feed sentinel page */}
         <div
           key="end-sentinel"
-          className="w-full"
-          style={{
-            height: useCH ? `${pageHeight}px` : "100dvh",
-            contain: "layout style paint",
-          }}
+          className={`w-full ${pageStyle}`}
+          style={{ contain: "layout style paint" }}
         />
       </div>
     </div>
