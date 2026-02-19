@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { mapErrorToUserMessage } from "@/lib/error-utils";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { compressImage } from "@/lib/image-utils";
@@ -58,8 +59,8 @@ export default function AvatarUpload({ size = "lg", onUploaded }: AvatarUploadPr
       await refreshProfile();
       onUploaded?.(url);
       toast.success("Avatar updated");
-    } catch (err: any) {
-      toast.error(err.message || "Upload failed");
+    } catch (err: unknown) {
+      toast.error(mapErrorToUserMessage(err));
     } finally {
       setUploading(false);
     }

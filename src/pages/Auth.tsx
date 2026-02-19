@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { mapErrorToUserMessage } from "@/lib/error-utils";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -55,8 +56,8 @@ export default function Auth() {
         if (error) throw error;
         toast.success("Check your email to confirm your account");
       }
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      toast.error(mapErrorToUserMessage(error));
     } finally {
       setLoading(false);
     }
