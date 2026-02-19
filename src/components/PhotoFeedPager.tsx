@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, type ReactNode } from "react";
+import { useRef, useCallback, useEffect, useState, useLayoutEffect, type ReactNode } from "react";
 import { FEED_ANIM_CONFIG, getTransitionCSS } from "@/lib/feed-anim-config";
 
 export interface FeedItem {
@@ -250,8 +250,30 @@ export default function PhotoFeedPager<T extends FeedItem>({
   const windowStart = Math.max(0, currentIndex - half);
   const windowEnd = Math.min(items.length - 1, currentIndex + half);
 
-  const useCH = useContainerHeight;
-  const pageStyle = useCH ? "h-full" : "h-[100dvh]";
+  // Use measured container height for page sizing when useContainerHeight is true
+  const [measuredHeight, setMeasuredHeight] = useState(0);
+  useLayoutEffect(() => {
+    const measure = () => {
+      if (useContainerHeight && containerRef.current) {
+        setMeasuredHeight(containerRef.current.clientHeight);
+      } else {
+        setMeasuredHeight(window.innerHeight);
+      }
+    };
+    measure();
+    // Also observe resize
+    const ro = new ResizeObserver(measure);
+    if (containerRef.current) ro.observe(containerRef.current);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [useContainerHeight]);
+
+  const pageHeightStyle = measuredHeight > 0
+    ? { height: `${measuredHeight}px` }
+    : { height: "100dvh" };
 
   return (
     <div
@@ -273,8 +295,8 @@ export default function PhotoFeedPager<T extends FeedItem>({
           return (
             <div
               key={item.id}
-              className={`w-full relative ${pageStyle}`}
-              style={{ contain: "layout style paint" }}
+              className="w-full relative"
+              style={{ ...pageHeightStyle, contain: "layout style paint" }}
             >
               {isInWindow ? (
                 <>
@@ -290,8 +312,8 @@ export default function PhotoFeedPager<T extends FeedItem>({
         {/* End-of-feed sentinel page */}
         <div
           key="end-sentinel"
-          className={`w-full ${pageStyle}`}
-          style={{ contain: "layout style paint" }}
+          className="w-full"
+          style={{ ...pageHeightStyle, contain: "layout style paint" }}
         />
       </div>
     </div>

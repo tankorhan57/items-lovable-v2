@@ -135,7 +135,7 @@ export default function SwipeReaction({
   const currentReactionInfo = currentReaction ? getReactionForDirection(currentReaction) : null;
 
   return (
-    <div className="relative overflow-hidden rounded-xl touch-none select-none">
+    <div className="relative overflow-hidden rounded-xl touch-none select-none h-full">
       {/* Drag overlay */}
       {dragging && direction && (
         <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
@@ -189,6 +189,7 @@ export default function SwipeReaction({
 
       {/* Swipeable content */}
       <div
+        className="h-full"
         style={{
           transform: dragging
             ? `translate(${offset.x * 0.25}px, ${offset.y * 0.25}px) scale(${1 - progress * 0.03})`

@@ -157,7 +157,10 @@ export default function Explore() {
     <div
       ref={containerRef}
       {...(tab === "world" ? pullHandlers : {})}
-      className="min-h-screen bg-background animate-fade-in overflow-y-auto"
+      className={cn(
+        "bg-background animate-fade-in",
+        tab === "following" ? "h-[100dvh] flex flex-col overflow-hidden" : "min-h-screen overflow-y-auto"
+      )}
     >
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="px-6 pt-12 pb-3 flex items-start justify-between">
@@ -192,7 +195,9 @@ export default function Explore() {
       {tab === "world" && <PullIndicator />}
 
       {tab === "following" ? (
-        <FollowingFeedTab />
+        <div className="flex-1 min-h-0">
+          <FollowingFeedTab />
+        </div>
       ) : loading ? (
         <div className="grid grid-cols-2 gap-2 p-2">
           {Array.from({ length: 6 }).map((_, i) => (
