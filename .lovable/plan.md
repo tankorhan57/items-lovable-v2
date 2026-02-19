@@ -1,98 +1,79 @@
 
-# Ritual Identity Deepening
 
-This phase strengthens daily immersion, collective presence, and temporal continuity without introducing any gamification, ranking, or engagement mechanics.
+# Fix: Tinder-Quality Swipe Gestures
 
----
+## Problem Diagnosis
 
-## 1. Daily Prompt Immersion Layer
+After reviewing the code, I found several issues causing the weak/broken swipe behavior on mobile:
 
-**What changes**: When a user opens the Capture screen and has not yet posted today, the prompt is displayed in a full-screen immersive moment before the capture action is revealed.
+1. **Dual gesture conflict**: Both `PhotoFeedPager` (vertical) and `HorizontalReaction` (horizontal) have independent touch handlers that fire simultaneously on the same touch events. They each do their own axis detection independently with no communication -- so both systems process every touch, causing jitter and dropped gestures.
 
-**New component**: `src/components/DailyImmersion.tsx`
-- Full-screen centered view with the daily prompt in large serif italic typography
-- Generous vertical breathing space (centered vertically with `px-8`)
-- Navigation bar is hidden (component renders above AppShell content)
-- The capture button fades in after ~1000ms delay using a CSS animation
-- Soft fade-in only, no bounce, spring, or celebratory effects
-- Once dismissed (by tapping capture), the immersion view is removed for the rest of the UTC day via `sessionStorage`
+2. **Drag feels sluggish**: `dragResistance: 0.45` means the post only moves 45% of finger distance. On a phone, this feels unresponsive and "weak."
 
-**Optional enhancement**: Very subtle background hue shift based on prompt category:
-- `color` category: warm rose tint (`bg-[hsl(350,20%,96%)]`)
-- `environment` category: soft green tint (`bg-[hsl(140,15%,96%)]`)
-- `time` category: cool blue tint (`bg-[hsl(220,15%,96%)]`)
-- All others: default background
-- These are nearly imperceptible -- the shift is only 1-2% from the base cream
+3. **Horizontal threshold too high**: `THRESHOLD = 80px` is too far for a quick phone swipe. Tinder uses roughly 40-60px.
 
-**Changes to `src/pages/Capture.tsx`**:
-- Fetch full `daily_items` row (including `category`) instead of just `id` and `prompt_text`
-- Add state: `showImmersion` (true if not posted and not already seen today)
-- If `showImmersion` is true, render `DailyImmersion` component instead of the normal capture UI
-- When immersion completes (user taps to begin), transition to the standard capture view
+4. **`touch-none` on pager container blocks child touch events**: The pager's `touch-none` CSS class disables default browser touch behavior on the entire area, which can interfere with the inner HorizontalReaction's gesture detection.
 
-**Changes to `src/index.css`**:
-- Add `@keyframes delayed-fade-in` with a built-in delay approach using `opacity: 0` for the first portion
-- Add `.animate-delayed-fade-in` class
+## Solution: Unified Gesture Coordinator
 
----
+Instead of two independent gesture systems fighting over the same touch events, we'll create a single gesture coordinator at the pager level that:
+- Captures all touch events once
+- Determines axis (vertical vs horizontal) with a single decision
+- Dispatches vertical movement to the pager logic
+- Dispatches horizontal movement to the reaction logic
 
-## 2. Collective Presence Layer
+### Changes
 
-### A. Reframe participation language
+**1. `src/components/PhotoFeedPager.tsx`**
+- Add an `onHorizontalSwipe` callback prop
+- Single touch handler determines axis, then either moves the track (vertical) or calls `onHorizontalSwipe` with dx/phase (horizontal)
+- Remove duplicate axis detection
+- Use `touch-pan-x` instead of `touch-none` so horizontal still feels native
 
-**Changes to `src/pages/Capture.tsx`** (confirmation screen):
-- Change `"{todayCount} people participated today"` to `"{todayCount} people are seeing the world this way today."`
+**2. `src/components/HorizontalReaction.tsx`**
+- Remove its own touch/mouse event listeners from the content div
+- Instead, accept `dragX` and `phase` ("dragging" | "ended" | "idle") as props from the parent pager
+- Apply visuals reactively based on these props
+- This eliminates all gesture conflict -- HorizontalReaction becomes a pure visual/animation layer
 
-**Changes to `src/pages/Explore.tsx`**:
-- In the cluster section, if a total count is shown, use collective phrasing
+**3. `src/lib/feed-anim-config.ts`**
+- Increase `dragResistance` from `0.45` to `0.85` so the post tracks the finger much more closely
+- Lower `snapThreshold` from `50` to `40` for snappier page turns
 
-### B. Appreciation counts already hidden in grid
-- The previous coherence pass already removed appreciation counts from Explore grid view -- confirm this remains intact. Only username and city are shown in the overlay.
+**4. `src/components/FollowingFeedTab.tsx`**
+- Wire up the new `onHorizontalSwipe` from the pager to pass drag state into `HorizontalReaction`
 
-### C. Subtle time-of-day markers in Explore
+**5. Horizontal reaction tuning**
+- Lower `THRESHOLD` from `80` to `50px`
+- Lower `VELOCITY_THRESHOLD` from `0.4` to `0.25` px/ms
+- These make horizontal swipes feel responsive like Tinder
 
-**Changes to `src/pages/Explore.tsx`**:
-- Group posts by time-of-day based on `confirmed_at` timestamp:
-  - Before 12:00 UTC: "Morning"
-  - 12:00-17:00 UTC: "Afternoon"  
-  - After 17:00 UTC: "Evening"
-- Render a thin, muted text divider between groups: a simple `<p className="text-meta px-4 py-3">Morning</p>` between grid sections
-- These are soft contextual markers, not section headers -- no bold, no icons
-- Posts still render in chronological order; the dividers simply mark transitions
+## Technical Detail
 
----
+The unified gesture flow:
 
-## 3. Temporal Depth Layer
+```text
+Touch Start
+    |
+    v
+Track dx, dy (both axes)
+    |
+    v
+abs(dx) or abs(dy) > 10px?
+    |
+   YES
+    |
+    v
+angle > 55 deg from horizontal? --> VERTICAL (pager moves track)
+angle < 55 deg from horizontal? --> HORIZONTAL (pass dx to HorizontalReaction)
+    |
+    v
+Axis locked until touch end
+```
 
-### A. Continuity line under 7-day grid
+On touch end:
+- If vertical: evaluate distance/velocity, snap to next/prev/current page
+- If horizontal: evaluate distance/velocity, commit reaction or snap back
 
-**Changes to `src/pages/Profile.tsx`**:
-- Below the 7-day grid, add a thin horizontal continuity visualization
-- A flex row of 7 small segments (one per day), each `h-[2px]` tall:
-  - Days with posts: `bg-foreground/30` (connected, present)
-  - Missed days: `bg-border` (soft gap, no shame)
-- Segments are separated by 1.5px gaps matching the grid above
-- No color coding, no red/green, no icons -- just presence and absence
+This guarantees exactly one system handles each gesture with zero conflict.
 
-### B. Archive weekly grouping
-
-**Changes to `src/pages/Archive.tsx`**:
-- Group archive items by `week_number` field (already available in the `daily_items` table)
-- Add subtle week dividers between groups: `<p className="text-meta px-0 pt-6 pb-2">Week {n}</p>`
-- No calendar UI, no grid restructure -- just soft textual markers between existing cards
-- If `week_number` is null, fall back to grouping by ISO week from `active_date`
-
----
-
-## Technical Summary
-
-| File | Changes |
-|------|---------|
-| `src/components/DailyImmersion.tsx` | **New** -- Immersive prompt moment component |
-| `src/pages/Capture.tsx` | Integrate immersion layer, fetch category, update collective language |
-| `src/pages/Explore.tsx` | Add time-of-day section dividers |
-| `src/pages/Profile.tsx` | Add continuity line below 7-day grid |
-| `src/pages/Archive.tsx` | Group prompts by week with subtle dividers |
-| `src/index.css` | Add delayed-fade-in animation keyframes |
-
-No database changes required. All data fields (`category`, `week_number`, `confirmed_at`) already exist.
