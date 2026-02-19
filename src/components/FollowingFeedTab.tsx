@@ -149,6 +149,21 @@ export default function FollowingFeedTab() {
     }
   }, [posts.length]);
 
+  // Measure header height to position feed correctly
+  const [headerHeight, setHeaderHeight] = useState(0);
+  useEffect(() => {
+    const header = document.querySelector('[data-feed-header]');
+    if (header) {
+      setHeaderHeight(header.getBoundingClientRect().bottom);
+    } else {
+      // Fallback: measure the sticky header above us
+      const sticky = document.querySelector('.sticky');
+      if (sticky) {
+        setHeaderHeight(sticky.getBoundingClientRect().bottom);
+      }
+    }
+  }, [loading, showOverview]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -179,8 +194,14 @@ export default function FollowingFeedTab() {
     );
   }
 
+  // Bottom nav is ~65px, use fixed positioning to bypass flex chain issues
+  const bottomNavHeight = 65;
+
   return (
-    <div className="relative bg-black" style={{ height: "calc(100dvh - 145px)" }}>
+    <div
+      className="fixed left-0 right-0 bg-black z-30"
+      style={{ top: `${headerHeight}px`, bottom: `${bottomNavHeight}px` }}
+    >
       <PhotoFeedPager
         items={posts}
         currentIndex={currentIndex}
