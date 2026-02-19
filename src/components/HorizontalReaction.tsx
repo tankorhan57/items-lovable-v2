@@ -1,166 +1,120 @@
-import { useRef, useState, useCallback, type ReactNode } from "react";
+import { useRef, useEffect, useState, useCallback, type ReactNode } from "react";
 import { useReactionConfig, type DirectionKey, REACTION_TYPES } from "@/hooks/use-reaction-config";
+import type { HorizontalSwipeState } from "@/components/PhotoFeedPager";
 
 export type ReactionDirection = "left" | "right";
 
-const THRESHOLD = 80;
-const VELOCITY_THRESHOLD = 0.4; // px/ms
+const THRESHOLD = 50;           // px to commit
+const VELOCITY_THRESHOLD = 0.25; // px/ms
 const MAX_DRAG = 200;
-const ROTATION_FACTOR = 0.06; // degrees per pixel
-const SETTLE_MS = 240;
-const COMMIT_MS = 280;
+const ROTATION_FACTOR = 0.08;   // degrees per px — slightly more dramatic
+const SETTLE_MS = 220;
 
 interface HorizontalReactionProps {
   children: ReactNode;
   currentReaction: DirectionKey | null;
   disabled?: boolean;
   onReact: (direction: DirectionKey) => void;
+  /** Driven by parent pager's unified gesture coordinator */
+  swipeState?: HorizontalSwipeState;
 }
 
+/**
+ * Pure visual layer for horizontal swipe reactions.
+ * No touch handlers — all gesture input comes via swipeState prop
+ * from the parent PhotoFeedPager's unified gesture coordinator.
+ */
 export default function HorizontalReaction({
   children,
   currentReaction,
   disabled,
   onReact,
+  swipeState,
 }: HorizontalReactionProps) {
   const { getReactionForDirection } = useReactionConfig();
   const [commitAnim, setCommitAnim] = useState<{ dir: DirectionKey; reaction: typeof REACTION_TYPES[number] } | null>(null);
 
-  const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const overlayLeftRef = useRef<HTMLDivElement>(null);
   const overlayRightRef = useRef<HTMLDivElement>(null);
-
-  const gesture = useRef({
-    startX: 0,
-    startY: 0,
-    startTime: 0,
-    currentX: 0,
-    locked: false, // axis determined
-    axis: null as "h" | "v" | null,
-    isDragging: false,
-    rafId: 0,
-  });
+  const lastDxRef = useRef(0);
+  const startTimeRef = useRef(0);
 
   const clamp = (v: number) => Math.max(-MAX_DRAG, Math.min(MAX_DRAG, v));
 
   const applyVisuals = useCallback((dx: number) => {
     const el = contentRef.current;
     if (!el) return;
-    const rotation = dx * ROTATION_FACTOR;
+    const clamped = clamp(dx);
+    const rotation = clamped * ROTATION_FACTOR;
     el.style.transition = "none";
-    el.style.transform = `translateX(${dx}px) rotate(${rotation}deg)`;
+    el.style.transform = `translateX(${clamped}px) rotate(${rotation}deg)`;
 
-    // Update overlay opacity
-    const progress = Math.min(1, Math.abs(dx) / THRESHOLD);
+    const progress = Math.min(1, Math.abs(clamped) / THRESHOLD);
     const leftOverlay = overlayLeftRef.current;
     const rightOverlay = overlayRightRef.current;
     if (leftOverlay) {
-      leftOverlay.style.opacity = dx < -20 ? String(Math.min(1, progress * 1.2)) : "0";
-      leftOverlay.style.transform = `scale(${0.6 + progress * 0.4})`;
+      leftOverlay.style.opacity = clamped < -15 ? String(Math.min(1, progress * 1.3)) : "0";
+      leftOverlay.style.transform = `scale(${0.5 + progress * 0.5})`;
     }
     if (rightOverlay) {
-      rightOverlay.style.opacity = dx > 20 ? String(Math.min(1, progress * 1.2)) : "0";
-      rightOverlay.style.transform = `scale(${0.6 + progress * 0.4})`;
+      rightOverlay.style.opacity = clamped > 15 ? String(Math.min(1, progress * 1.3)) : "0";
+      rightOverlay.style.transform = `scale(${0.5 + progress * 0.5})`;
     }
   }, []);
 
-  const resetVisuals = useCallback((animate = true) => {
+  const resetVisuals = useCallback(() => {
     const el = contentRef.current;
     if (!el) return;
-    if (animate) {
-      el.style.transition = `transform ${SETTLE_MS}ms cubic-bezier(0.25, 1, 0.5, 1)`;
-    }
+    el.style.transition = `transform ${SETTLE_MS}ms cubic-bezier(0.25, 1, 0.5, 1)`;
     el.style.transform = "translateX(0) rotate(0deg)";
     const leftOverlay = overlayLeftRef.current;
     const rightOverlay = overlayRightRef.current;
-    if (leftOverlay) { leftOverlay.style.opacity = "0"; leftOverlay.style.transform = "scale(0.6)"; }
-    if (rightOverlay) { rightOverlay.style.opacity = "0"; rightOverlay.style.transform = "scale(0.6)"; }
+    if (leftOverlay) { leftOverlay.style.opacity = "0"; leftOverlay.style.transform = "scale(0.5)"; }
+    if (rightOverlay) { rightOverlay.style.opacity = "0"; rightOverlay.style.transform = "scale(0.5)"; }
   }, []);
 
-  const handleStart = useCallback((clientX: number, clientY: number) => {
-    if (disabled) return;
-    const g = gesture.current;
-    g.startX = clientX;
-    g.startY = clientY;
-    g.startTime = Date.now();
-    g.currentX = 0;
-    g.locked = false;
-    g.axis = null;
-    g.isDragging = true;
-  }, [disabled]);
+  // React to swipeState changes from parent
+  useEffect(() => {
+    if (!swipeState || disabled) return;
 
-  const handleMove = useCallback((clientX: number, clientY: number) => {
-    const g = gesture.current;
-    if (!g.isDragging) return;
-
-    const dx = clientX - g.startX;
-    const dy = clientY - g.startY;
-
-    // Axis lock: determine once after 10px of movement
-    if (!g.locked) {
-      const absDx = Math.abs(dx);
-      const absDy = Math.abs(dy);
-      if (absDx < 10 && absDy < 10) return; // too small to determine
-      // Use strong angle threshold: horizontal if angle < 35° from x-axis
-      g.axis = absDx > absDy * 1.4 ? "h" : "v";
-      g.locked = true;
-      if (g.axis === "v") {
-        // Vertical — don't interfere, let pager handle it
-        g.isDragging = false;
-        return;
+    if (swipeState.phase === "dragging") {
+      if (lastDxRef.current === 0 && swipeState.dx !== 0) {
+        startTimeRef.current = Date.now();
       }
+      lastDxRef.current = swipeState.dx;
+      requestAnimationFrame(() => applyVisuals(swipeState.dx));
+    } else if (swipeState.phase === "ended") {
+      const dx = lastDxRef.current;
+      const elapsed = Date.now() - startTimeRef.current + 1;
+      const velocity = Math.abs(dx) / elapsed;
+      const exceeded = Math.abs(dx) > THRESHOLD || velocity > VELOCITY_THRESHOLD;
+
+      if (exceeded && Math.abs(dx) > 20) {
+        const dir: DirectionKey = dx > 0 ? "right" : "left";
+        const reaction = getReactionForDirection(dir);
+        setCommitAnim({ dir, reaction });
+        setTimeout(() => setCommitAnim(null), 600);
+        onReact(dir);
+        if (navigator.vibrate) navigator.vibrate(18);
+      }
+
+      lastDxRef.current = 0;
+      resetVisuals();
     }
-
-    if (g.axis !== "h") return;
-
-    g.currentX = clamp(dx);
-    cancelAnimationFrame(g.rafId);
-    g.rafId = requestAnimationFrame(() => {
-      applyVisuals(g.currentX);
-    });
-  }, [applyVisuals]);
-
-  const handleEnd = useCallback(() => {
-    const g = gesture.current;
-    if (!g.isDragging || g.axis !== "h") {
-      g.isDragging = false;
-      return;
-    }
-    g.isDragging = false;
-    cancelAnimationFrame(g.rafId);
-
-    const elapsed = Date.now() - g.startTime + 1;
-    const velocity = Math.abs(g.currentX) / elapsed;
-    const dx = g.currentX;
-
-    const exceeded = Math.abs(dx) > THRESHOLD || velocity > VELOCITY_THRESHOLD;
-
-    if (exceeded && Math.abs(dx) > 20) {
-      const dir: DirectionKey = dx > 0 ? "right" : "left";
-      const reaction = getReactionForDirection(dir);
-
-      // Commit animation
-      setCommitAnim({ dir, reaction });
-      setTimeout(() => setCommitAnim(null), 600);
-      onReact(dir);
-      if (navigator.vibrate) navigator.vibrate(18);
-    }
-
-    resetVisuals(true);
-  }, [onReact, getReactionForDirection, resetVisuals]);
+  }, [swipeState, disabled, applyVisuals, resetVisuals, getReactionForDirection, onReact]);
 
   const currentReactionInfo = currentReaction ? getReactionForDirection(currentReaction) : null;
   const leftReaction = getReactionForDirection("left");
   const rightReaction = getReactionForDirection("right");
 
   return (
-    <div ref={containerRef} className="relative h-full w-full overflow-hidden">
+    <div className="relative h-full w-full overflow-hidden">
       {/* Left reaction overlay (swipe left) */}
       <div
         ref={overlayLeftRef}
         className="absolute right-8 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1 pointer-events-none"
-        style={{ opacity: 0, transform: "scale(0.6)", transition: "none" }}
+        style={{ opacity: 0, transform: "scale(0.5)", transition: "none" }}
       >
         <span className="text-5xl drop-shadow-lg">{leftReaction.icon}</span>
         <span className="text-xs font-medium text-white/90 drop-shadow">{leftReaction.label}</span>
@@ -170,7 +124,7 @@ export default function HorizontalReaction({
       <div
         ref={overlayRightRef}
         className="absolute left-8 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1 pointer-events-none"
-        style={{ opacity: 0, transform: "scale(0.6)", transition: "none" }}
+        style={{ opacity: 0, transform: "scale(0.5)", transition: "none" }}
       >
         <span className="text-5xl drop-shadow-lg">{rightReaction.icon}</span>
         <span className="text-xs font-medium text-white/90 drop-shadow">{rightReaction.label}</span>
@@ -194,31 +148,11 @@ export default function HorizontalReaction({
         </div>
       )}
 
-      {/* Swipeable content — touch events here, NOT on container (pager needs container) */}
+      {/* Content — no touch handlers, pager owns all gestures */}
       <div
         ref={contentRef}
         className="h-full w-full"
         style={{ willChange: "transform" }}
-        onTouchStart={(e) => {
-          const t = e.touches[0];
-          handleStart(t.clientX, t.clientY);
-        }}
-        onTouchMove={(e) => {
-          const t = e.touches[0];
-          handleMove(t.clientX, t.clientY);
-        }}
-        onTouchEnd={handleEnd}
-        onMouseDown={(e) => {
-          handleStart(e.clientX, e.clientY);
-          const onMouseMove = (ev: MouseEvent) => handleMove(ev.clientX, ev.clientY);
-          const onMouseUp = () => {
-            handleEnd();
-            window.removeEventListener("mousemove", onMouseMove);
-            window.removeEventListener("mouseup", onMouseUp);
-          };
-          window.addEventListener("mousemove", onMouseMove);
-          window.addEventListener("mouseup", onMouseUp);
-        }}
       >
         {children}
       </div>
