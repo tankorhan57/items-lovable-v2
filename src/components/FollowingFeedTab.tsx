@@ -247,7 +247,7 @@ export default function FollowingFeedTab() {
                         {(item.display_name || item.username).charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <span className="text-sm font-medium text-white/95">
+                    <span className="text-sm font-bold text-white/95">
                       {item.display_name || item.username}
                     </span>
                   </button>

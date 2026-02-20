@@ -9,50 +9,50 @@
     --font-serif: 'Instrument Serif', serif;
     --font-sans: 'DM Sans', sans-serif;
 
-    /* SECTION 1 — High-contrast warm light palette */
-    --background: 60 3% 97%;        /* #F7F7F6 */
-    --foreground: 0 0% 7%;          /* #111111 */
+    /* SECTION 1 — Warm neutral light palette with real contrast */
+    --background: 40 6% 93%;        /* ~#EDE9E5 warm stone */
+    --foreground: 0 0% 5%;          /* #0D0D0D near-black */
 
-    --card: 0 0% 100%;              /* #FFFFFF */
-    --card-foreground: 0 0% 7%;
+    --card: 40 10% 99%;             /* ~#FDFCFB warm white */
+    --card-foreground: 0 0% 5%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 7%;
+    --popover: 40 10% 99%;
+    --popover-foreground: 0 0% 5%;
 
     /* Modern warm coral accent */
-    --primary: 9 100% 61%;          /* #FF5A3C */
+    --primary: 9 100% 58%;          /* #FF4D2E slightly deeper coral */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 95%;          /* #F2F2F2 */
-    --secondary-foreground: 0 0% 15%;
+    --secondary: 40 5% 90%;         /* ~#E5E2DE warm gray */
+    --secondary-foreground: 0 0% 12%;
 
-    --muted: 0 0% 93%;
-    --muted-foreground: 0 0% 42%;   /* #6B6B6B */
+    --muted: 40 4% 88%;
+    --muted-foreground: 0 0% 38%;   /* #616161 — clearly lighter than body */
 
-    --accent: 9 100% 61%;
+    --accent: 9 100% 58%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 92%;             /* #EAEAEA */
-    --input: 0 0% 92%;
-    --ring: 9 100% 61%;
+    --border: 40 5% 85%;            /* ~#D9D5D0 visible but soft */
+    --input: 40 5% 85%;
+    --ring: 9 100% 58%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 20%;
-    --sidebar-primary: 9 100% 61%;
+    --sidebar-background: 40 6% 95%;
+    --sidebar-foreground: 0 0% 12%;
+    --sidebar-primary: 9 100% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 95%;
-    --sidebar-accent-foreground: 0 0% 15%;
-    --sidebar-border: 0 0% 92%;
-    --sidebar-ring: 9 100% 61%;
+    --sidebar-accent: 40 5% 90%;
+    --sidebar-accent-foreground: 0 0% 12%;
+    --sidebar-border: 40 5% 85%;
+    --sidebar-ring: 9 100% 58%;
 
-    --shadow-soft: 0 1px 3px 0 hsl(0 0% 0% / 0.04), 0 1px 2px -1px hsl(0 0% 0% / 0.03);
-    --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.06), 0 1px 3px -1px hsl(0 0% 0% / 0.04);
-    --shadow-elevated: 0 8px 24px -4px hsl(0 0% 0% / 0.08), 0 2px 6px -2px hsl(0 0% 0% / 0.04);
+    --shadow-soft: 0 1px 3px 0 hsl(0 0% 0% / 0.07), 0 1px 2px -1px hsl(0 0% 0% / 0.05);
+    --shadow-card: 0 2px 10px -2px hsl(0 0% 0% / 0.10), 0 1px 4px -1px hsl(0 0% 0% / 0.06);
+    --shadow-elevated: 0 8px 28px -4px hsl(0 0% 0% / 0.14), 0 2px 8px -2px hsl(0 0% 0% / 0.07);
   }
 
   .dark {
@@ -114,22 +114,22 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* SECTION 2 — Typography hierarchy */
-  /* Tier 1: Ritual Headline — 28-32px, weight 700 */
+  /* SECTION 2 — Typography hierarchy — strong contrast */
+  /* Tier 1: Ritual Headline — 30-34px, weight 700 */
   h1 {
     font-family: var(--font-serif);
-    @apply text-[28px] leading-tight font-bold;
+    @apply text-[32px] leading-tight font-bold tracking-[-0.01em];
   }
 
-  /* Tier 2: Section Title — 18-20px, weight 600 */
+  /* Tier 2: Section Title — 20-22px, weight 700 */
   h2, h3 {
     font-family: var(--font-serif);
-    @apply text-xl leading-snug font-semibold;
+    @apply text-[22px] leading-snug font-bold;
   }
 
   h4 {
     font-family: var(--font-serif);
-    @apply text-lg font-semibold;
+    @apply text-lg font-bold;
   }
 }
 

@@ -118,25 +118,25 @@ export default function Explore() {
         tab === "following" ? "h-[100dvh] flex flex-col overflow-hidden" : "min-h-screen overflow-y-auto"
       )}
     >
-      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border" data-feed-header>
-        <div className="px-5 pt-14 pb-3 flex items-start justify-between">
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border" data-feed-header>
+        <div className="px-5 pt-14 pb-2 flex items-start justify-between">
           <div>
-            <h1 className="text-[28px] font-serif text-foreground">Explore</h1>
+            <h1 className="text-[28px] font-serif font-bold text-foreground">Explore</h1>
             {todayPrompt && (
-              <p className="text-meta mt-1.5 italic font-serif">"{todayPrompt}"</p>
+              <p className="text-[15px] mt-1 italic font-serif text-foreground/60">"{todayPrompt}"</p>
             )}
           </div>
           <button onClick={() => navigate("/search")} className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-ritual mt-1 tap-scale">
             <SearchIcon className="h-5 w-5" />
           </button>
         </div>
-        <div className="flex gap-1.5 px-5 pb-3">
+        <div className="flex gap-1.5 px-5 pb-2.5">
           {(["world", "following"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={cn(
-                "rounded-full px-5 py-2 text-[13px] font-semibold transition-ritual tap-scale",
+                "rounded-full px-5 py-2 text-[13px] font-bold transition-ritual tap-scale",
                 tab === t
                   ? "bg-foreground text-background"
                   : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -155,7 +155,7 @@ export default function Explore() {
           <FollowingFeedTab />
         </div>
       ) : loading ? (
-        <div className="grid grid-cols-2 gap-3 p-4">
+        <div className="grid grid-cols-2 gap-2 p-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="aspect-square rounded-xl bg-secondary animate-pulse" />
           ))}
@@ -167,18 +167,18 @@ export default function Explore() {
       ) : (
         <div>
           {clusterPosts.length >= 2 && (
-            <div className="px-4 py-6">
-              <div className="flex items-center gap-2 mb-4">
+            <div className="px-4 py-4">
+              <div className="flex items-center gap-2 mb-3">
                 <Globe className="h-4 w-4 text-muted-foreground" />
-                <h2 className="text-lg font-serif text-foreground">Today Around the World</h2>
+                <h2 className="text-lg font-serif font-bold text-foreground">Today Around the World</h2>
               </div>
-              <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
+              <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-1 px-1">
                 {clusterPosts.map((cp) => (
                   <div key={cp.id} className="shrink-0 w-28 tap-scale transition-ritual cursor-pointer" onClick={() => navigate(`/post/${cp.id}`)}>
-                    <div className="aspect-square overflow-hidden rounded-xl shadow-soft">
+                    <div className="aspect-square overflow-hidden rounded-xl shadow-card">
                       <img src={cp.image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
                     </div>
-                    <p className="text-meta mt-1.5 truncate text-center font-medium">{cp.city || "Somewhere"}</p>
+                    <p className="text-meta mt-1 truncate text-center font-semibold">{cp.city || "Somewhere"}</p>
                   </div>
                 ))}
               </div>
@@ -200,17 +200,17 @@ export default function Explore() {
               if (gridBatch.length === 0) return;
               const batch = [...gridBatch];
               elements.push(
-                <div key={`grid-${batch[0].id}`} className="grid grid-cols-2 gap-3 px-4">
+                <div key={`grid-${batch[0].id}`} className="grid grid-cols-2 gap-2 px-3">
                   {batch.map((post) => (
                     <div
                       key={post.id}
-                      className="group relative aspect-square overflow-hidden rounded-xl cursor-pointer tap-scale transition-ritual shadow-soft"
+                      className="group relative aspect-square overflow-hidden rounded-xl cursor-pointer tap-scale transition-ritual shadow-card"
                       onClick={() => navigate(`/post/${post.id}`)}
                     >
                       <img src={post.image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent p-3 pt-8">
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent p-2.5 pt-8">
                         <button onClick={(e) => { e.stopPropagation(); navigate(`/user/${post.user_id}`); }} className="text-left tap-scale">
-                          <p className="text-[13px] font-semibold text-white">{post.user.username}</p>
+                          <p className="text-[13px] font-bold text-white">{post.user.username}</p>
                           {post.city && <p className="text-[11px] text-white/60 mt-0.5">{post.city}</p>}
                         </button>
                       </div>
@@ -226,7 +226,7 @@ export default function Explore() {
               if (tod !== lastTod) {
                 flushGrid();
                 elements.push(
-                  <p key={`tod-${tod}-${post.id}`} className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground font-semibold px-5 py-4">{tod}</p>
+                  <p key={`tod-${tod}-${post.id}`} className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground font-bold px-4 py-3">{tod}</p>
                 );
                 lastTod = tod;
               }
@@ -234,7 +234,7 @@ export default function Explore() {
             });
             flushGrid();
 
-            return <div className="pb-4">{elements}</div>;
+            return <div className="pb-3">{elements}</div>;
           })()}
           <Sentinel />
         </div>
