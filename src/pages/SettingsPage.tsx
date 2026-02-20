@@ -2,16 +2,18 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { ArrowLeft, LogOut, Sparkles } from "lucide-react";
+import { ArrowLeft, LogOut, Moon, Sparkles } from "lucide-react";
 import AvatarUpload from "@/components/AvatarUpload";
 
 export default function SettingsPage() {
   const { profile, user, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
   const [displayName, setDisplayName] = useState(profile?.display_name || "");
   const [bio, setBio] = useState(profile?.bio || "");
   const [isPrivate, setIsPrivate] = useState(profile?.is_private || false);
@@ -70,6 +72,17 @@ export default function SettingsPage() {
               <p className="text-xs text-muted-foreground">Only approved followers can see your photos</p>
             </div>
             <Switch checked={isPrivate} onCheckedChange={setIsPrivate} />
+          </div>
+
+          <div className="flex items-center justify-between py-3 border-t border-border">
+            <div className="flex items-center gap-2">
+              <Moon className="h-4 w-4 text-foreground" />
+              <div>
+                <p className="text-sm text-foreground">Dark mode</p>
+                <p className="text-xs text-muted-foreground">Switch to a darker color scheme</p>
+              </div>
+            </div>
+            <Switch checked={theme === "dark"} onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")} />
           </div>
 
           <Button onClick={handleSave} className="w-full" disabled={saving}>
