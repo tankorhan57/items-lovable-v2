@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,81 +9,80 @@
     --font-serif: 'Instrument Serif', serif;
     --font-sans: 'DM Sans', sans-serif;
 
-    --background: 40 33% 96%;
-    --foreground: 30 12% 14%;
+    /* SECTION 1 — High-contrast warm light palette */
+    --background: 60 3% 97%;        /* #F7F7F6 */
+    --foreground: 0 0% 7%;          /* #111111 */
 
-    --card: 40 30% 98%;
-    --card-foreground: 30 12% 14%;
+    --card: 0 0% 100%;              /* #FFFFFF */
+    --card-foreground: 0 0% 7%;
 
-    --popover: 40 30% 98%;
-    --popover-foreground: 30 12% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
 
-    /* Slightly muted primary — less saturated, calmer */
-    --primary: 16 42% 46%;
-    --primary-foreground: 40 33% 96%;
+    /* Modern warm coral accent */
+    --primary: 9 100% 61%;          /* #FF5A3C */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 38 22% 91%;
-    --secondary-foreground: 30 12% 22%;
+    --secondary: 0 0% 95%;          /* #F2F2F2 */
+    --secondary-foreground: 0 0% 15%;
 
-    --muted: 35 16% 92%;
-    --muted-foreground: 30 8% 50%;
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 42%;   /* #6B6B6B */
 
-    /* Muted accent — warm but grounded */
-    --accent: 35 50% 50%;
-    --accent-foreground: 40 33% 96%;
+    --accent: 9 100% 61%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 55% 50%;
-    --destructive-foreground: 40 33% 96%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 35 16% 89%;
-    --input: 35 16% 89%;
-    --ring: 16 42% 46%;
+    --border: 0 0% 92%;             /* #EAEAEA */
+    --input: 0 0% 92%;
+    --ring: 9 100% 61%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 40 30% 97%;
-    --sidebar-foreground: 30 10% 30%;
-    --sidebar-primary: 16 42% 46%;
-    --sidebar-primary-foreground: 40 33% 96%;
-    --sidebar-accent: 38 22% 92%;
-    --sidebar-accent-foreground: 30 12% 22%;
-    --sidebar-border: 35 16% 89%;
-    --sidebar-ring: 16 42% 46%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 9 100% 61%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 95%;
+    --sidebar-accent-foreground: 0 0% 15%;
+    --sidebar-border: 0 0% 92%;
+    --sidebar-ring: 9 100% 61%;
 
-    --warm-glow: 0 0% 0% / 0.03;
-    --shadow-soft: 0 2px 12px -2px hsl(30 12% 14% / 0.05);
-    --shadow-card: 0 4px 24px -4px hsl(30 12% 14% / 0.07);
-    --shadow-elevated: 0 8px 40px -8px hsl(30 12% 14% / 0.10);
+    --shadow-soft: 0 1px 3px 0 hsl(0 0% 0% / 0.04), 0 1px 2px -1px hsl(0 0% 0% / 0.03);
+    --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.06), 0 1px 3px -1px hsl(0 0% 0% / 0.04);
+    --shadow-elevated: 0 8px 24px -4px hsl(0 0% 0% / 0.08), 0 2px 6px -2px hsl(0 0% 0% / 0.04);
   }
 
   .dark {
-    --background: 30 10% 8%;
-    --foreground: 40 20% 92%;
-    --card: 30 10% 10%;
-    --card-foreground: 40 20% 92%;
-    --popover: 30 10% 10%;
-    --popover-foreground: 40 20% 92%;
-    --primary: 16 42% 52%;
-    --primary-foreground: 30 10% 8%;
-    --secondary: 30 10% 15%;
-    --secondary-foreground: 40 20% 88%;
-    --muted: 30 8% 18%;
-    --muted-foreground: 30 10% 55%;
-    --accent: 35 45% 48%;
-    --accent-foreground: 30 10% 8%;
-    --destructive: 0 50% 42%;
-    --destructive-foreground: 40 20% 92%;
-    --border: 30 8% 20%;
-    --input: 30 8% 20%;
-    --ring: 16 42% 52%;
-    --sidebar-background: 30 10% 9%;
-    --sidebar-foreground: 40 15% 85%;
-    --sidebar-primary: 16 42% 52%;
-    --sidebar-primary-foreground: 30 10% 8%;
-    --sidebar-accent: 30 8% 15%;
-    --sidebar-accent-foreground: 40 15% 85%;
-    --sidebar-border: 30 8% 18%;
-    --sidebar-ring: 16 42% 52%;
+    --background: 0 0% 7%;
+    --foreground: 0 0% 93%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 93%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 93%;
+    --primary: 9 90% 58%;
+    --primary-foreground: 0 0% 7%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 88%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 9 90% 58%;
+    --accent-foreground: 0 0% 7%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 93%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 9 90% 58%;
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 85%;
+    --sidebar-primary: 9 90% 58%;
+    --sidebar-primary-foreground: 0 0% 7%;
+    --sidebar-accent: 0 0% 14%;
+    --sidebar-accent-foreground: 0 0% 85%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 9 90% 58%;
   }
 }
 
@@ -94,24 +93,26 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* 3-tier typography system */
-  /* Tier 1: Ritual Headline — serif, used sparingly for high-meaning moments */
+  /* SECTION 2 — Typography hierarchy */
+  /* Tier 1: Ritual Headline — 28-32px, weight 700 */
   h1 {
     font-family: var(--font-serif);
-    @apply text-2xl leading-tight;
+    @apply text-[28px] leading-tight font-bold;
   }
 
-  /* Tier 2: Section Title — serif, consistent across screens */
+  /* Tier 2: Section Title — 18-20px, weight 600 */
   h2, h3 {
     font-family: var(--font-serif);
-    @apply text-lg leading-snug;
+    @apply text-xl leading-snug font-semibold;
   }
 
-  /* Tier 3: Meta Text handled by utility classes — text-xs text-muted-foreground */
   h4 {
     font-family: var(--font-serif);
+    @apply text-lg font-semibold;
   }
 }
 
@@ -131,13 +132,21 @@
   .shadow-elevated {
     box-shadow: var(--shadow-elevated);
   }
-  /* Meta text utility */
+  /* Meta text — 13px, muted */
   .text-meta {
-    @apply text-xs text-muted-foreground;
+    @apply text-[13px] text-muted-foreground;
   }
-  /* Ritual transition utility */
+  /* SECTION 5 — Interaction polish */
   .transition-ritual {
-    @apply transition-all duration-150 ease-out;
+    @apply transition-all duration-200 ease-out;
+  }
+  /* Tap feedback utility */
+  .tap-scale {
+    @apply active:scale-[0.97] active:opacity-90 transition-all duration-150 ease-out;
+  }
+  /* Card surface utility */
+  .surface-card {
+    @apply bg-card rounded-2xl shadow-card;
   }
 }
 
@@ -148,7 +157,7 @@
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }
 }
 
@@ -158,7 +167,7 @@
 }
 
 .animate-fade-in {
-  animation: fade-in 0.4s ease-out;
+  animation: fade-in 0.35s ease-out;
 }
 
 .animate-scale-in {
@@ -166,7 +175,7 @@
 }
 
 .animate-slide-up {
-  animation: slide-up 0.5s ease-out;
+  animation: slide-up 0.4s ease-out;
 }
 
 @keyframes delayed-fade-in {

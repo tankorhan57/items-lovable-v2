@@ -42,12 +42,13 @@ export default function AppShell() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <main className="flex-1 pb-20">
+      <main className="flex-1 pb-[72px]">
         <Outlet />
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/80 backdrop-blur-lg">
-        <div className="mx-auto flex max-w-md items-center justify-around py-2">
+      {/* Bottom nav — high-contrast, structured */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-md items-center justify-around py-2 px-2">
           {navItems.map(({ path, icon: Icon, label, badge }) => {
             const active = location.pathname === path;
             return (
@@ -55,19 +56,21 @@ export default function AppShell() {
                 key={path}
                 onClick={() => navigate(path)}
                 className={cn(
-                  "relative flex flex-col items-center gap-0.5 px-4 py-1.5 transition-ritual active:scale-[0.98]",
+                  "relative flex flex-col items-center gap-1 px-5 py-2 rounded-xl tap-scale",
                   active ? "text-primary" : "text-muted-foreground"
                 )}
               >
-                <Icon className="h-5 w-5" strokeWidth={active ? 2.2 : 1.5} />
+                <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.4 : 1.6} />
                 {badge && (
-                  <span className="absolute top-0.5 right-3 h-2 w-2 rounded-full bg-primary" />
+                  <span className="absolute top-1 right-3.5 h-2 w-2 rounded-full bg-primary ring-2 ring-card" />
                 )}
-                <span className="text-[10px] font-medium">{label}</span>
+                <span className={cn("text-[11px]", active ? "font-semibold" : "font-medium")}>{label}</span>
               </button>
             );
           })}
         </div>
+        {/* Safe area for home indicator */}
+        <div className="h-[env(safe-area-inset-bottom)]" />
       </nav>
     </div>
   );
