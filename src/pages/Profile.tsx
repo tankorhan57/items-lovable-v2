@@ -64,10 +64,10 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      {/* Header — structured spacing on 8pt grid */}
-      <div className="px-5 pt-14 pb-6">
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center gap-4">
+      {/* Header — tighter 8pt grid */}
+      <div className="px-5 pt-14 pb-4">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3.5">
             <RitualAvatar
               src={profile.avatar_url}
               fallback={profile.username?.[0]?.toUpperCase()}
@@ -75,8 +75,8 @@ export default function Profile() {
               size="lg"
             />
             <div>
-              <h1 className="text-xl font-serif text-foreground">{profile.display_name || profile.username}</h1>
-              <p className="text-meta mt-1">@{profile.username}</p>
+              <h1 className="text-xl font-serif font-bold text-foreground">{profile.display_name || profile.username}</h1>
+              <p className="text-meta mt-0.5">@{profile.username}</p>
             </div>
           </div>
           <button onClick={() => navigate("/settings")} className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all tap-scale">
@@ -85,11 +85,11 @@ export default function Profile() {
         </div>
 
         {profile.bio && (
-          <p className="text-[15px] text-foreground/80 mb-6 leading-relaxed">{profile.bio}</p>
+          <p className="text-[15px] text-foreground/80 mb-4 leading-relaxed">{profile.bio}</p>
         )}
 
         {/* Stats row — confident sizing */}
-        <div className="flex gap-8 mb-6">
+        <div className="flex gap-8 mb-4">
           <div className="text-center">
             <p className="text-lg font-semibold text-foreground">{totalPosts}</p>
             <p className="text-meta mt-0.5">Items</p>
@@ -127,8 +127,8 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Last 7 days grid — card surface */}
-      <div className="mx-4 mb-6 p-4 surface-card">
+      {/* Last 7 days grid — card surface with visible elevation */}
+      <div className="mx-4 mb-4 p-4 surface-card border border-border">
         <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-3">Last 7 days</p>
         <div className="grid grid-cols-7 gap-2">
           {posts.map((day) => (
