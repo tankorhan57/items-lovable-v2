@@ -172,11 +172,11 @@ export default function FriendsFeed() {
   if (posts.length === 0) {
     return (
       <div className="fixed inset-0 bg-background flex flex-col items-center justify-center z-50 px-6">
-        <button onClick={() => navigate(-1)} className="absolute top-12 left-4 p-2 text-muted-foreground">
+        <button onClick={() => navigate(-1)} className="absolute top-12 left-4 p-2 text-muted-foreground tap-scale transition-ritual">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h2 className="text-xl font-serif text-foreground mb-2">No friend posts yet</h2>
-        <p className="text-meta text-center">Your friends haven't posted recently.</p>
+        <p className="text-meta text-center max-w-xs">Your friends haven't posted recently.</p>
       </div>
     );
   }
@@ -185,7 +185,7 @@ export default function FriendsFeed() {
   if (showOverview) {
     return (
       <div className="fixed inset-0 z-50 bg-background animate-fade-in">
-        <button onClick={() => navigate(-1)} className="absolute top-12 left-4 z-50 p-2 text-muted-foreground hover:text-foreground transition-colors">
+        <button onClick={() => navigate(-1)} className="absolute top-12 left-4 z-50 p-2 text-muted-foreground hover:text-foreground transition-ritual tap-scale">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <FollowingOverview
@@ -204,10 +204,10 @@ export default function FriendsFeed() {
     <div className="fixed inset-0 bg-black z-50 overflow-hidden">
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-12 pb-3 flex items-center justify-between bg-gradient-to-b from-black/50 to-transparent pointer-events-none">
-        <button onClick={() => navigate(-1)} className="p-2 text-white/80 hover:text-white transition-colors pointer-events-auto">
+        <button onClick={() => navigate(-1)} className="p-2 text-white/80 hover:text-white transition-ritual tap-scale pointer-events-auto">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <span className="text-xs font-medium text-white/50">
+        <span className="text-meta text-white/50">
           {currentIndex + 1} / {posts.length}
         </span>
         <div className="w-9" />
@@ -241,11 +241,11 @@ export default function FriendsFeed() {
           <div className="absolute bottom-0 left-0 right-0 z-20 px-5 pb-10 pt-16 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
             <div className="flex items-end justify-between">
               <div className="space-y-1 pointer-events-auto">
-                <button onClick={() => navigate(`/user/${item.user_id}`)} className="flex items-center gap-2">
+                <button onClick={() => navigate(`/user/${item.user_id}`)} className="flex items-center gap-2 tap-scale transition-ritual">
                   {item.avatar_url && (
                     <img src={item.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover border border-white/20" />
                   )}
-                  <span className="text-sm font-medium text-white/90">
+                  <span className="text-sm font-semibold text-white/90">
                     {item.display_name || item.username}
                   </span>
                 </button>
@@ -258,7 +258,7 @@ export default function FriendsFeed() {
 
               <button
                 onClick={() => setNotePostId(item.id)}
-                className="p-2.5 rounded-full bg-white/10 backdrop-blur-sm text-white/70 hover:text-white transition-colors pointer-events-auto"
+                className="p-2.5 rounded-full bg-white/10 backdrop-blur-sm text-white/70 hover:text-white transition-ritual tap-scale pointer-events-auto"
               >
                 <MessageSquare className="h-4 w-4" />
               </button>

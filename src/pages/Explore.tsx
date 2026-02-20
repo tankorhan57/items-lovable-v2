@@ -126,7 +126,7 @@ export default function Explore() {
               <p className="text-meta mt-1.5 italic font-serif">"{todayPrompt}"</p>
             )}
           </div>
-          <button onClick={() => navigate("/search")} className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all mt-1 tap-scale">
+          <button onClick={() => navigate("/search")} className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-ritual mt-1 tap-scale">
             <SearchIcon className="h-5 w-5" />
           </button>
         </div>
@@ -136,7 +136,7 @@ export default function Explore() {
               key={t}
               onClick={() => setTab(t)}
               className={cn(
-                "rounded-full px-5 py-2 text-[13px] font-semibold transition-all duration-200 tap-scale",
+                "rounded-full px-5 py-2 text-[13px] font-semibold transition-ritual tap-scale",
                 tab === t
                   ? "bg-foreground text-background"
                   : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -157,7 +157,7 @@ export default function Explore() {
       ) : loading ? (
         <div className="grid grid-cols-2 gap-3 p-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="aspect-square rounded-2xl bg-secondary animate-pulse" />
+            <div key={i} className="aspect-square rounded-xl bg-secondary animate-pulse" />
           ))}
         </div>
       ) : posts.length === 0 ? (
@@ -170,15 +170,15 @@ export default function Explore() {
             <div className="px-4 py-6">
               <div className="flex items-center gap-2 mb-4">
                 <Globe className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-lg font-serif text-foreground">Today Around the World</h3>
+                <h2 className="text-lg font-serif text-foreground">Today Around the World</h2>
               </div>
               <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
                 {clusterPosts.map((cp) => (
-                  <div key={cp.id} className="shrink-0 w-28 tap-scale cursor-pointer" onClick={() => navigate(`/post/${cp.id}`)}>
+                  <div key={cp.id} className="shrink-0 w-28 tap-scale transition-ritual cursor-pointer" onClick={() => navigate(`/post/${cp.id}`)}>
                     <div className="aspect-square overflow-hidden rounded-xl shadow-soft">
                       <img src={cp.image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
                     </div>
-                    <p className="text-[11px] text-muted-foreground mt-1.5 truncate text-center font-medium">{cp.city || "Somewhere"}</p>
+                    <p className="text-meta mt-1.5 truncate text-center font-medium">{cp.city || "Somewhere"}</p>
                   </div>
                 ))}
               </div>
@@ -204,12 +204,12 @@ export default function Explore() {
                   {batch.map((post) => (
                     <div
                       key={post.id}
-                      className="group relative aspect-square overflow-hidden rounded-2xl cursor-pointer tap-scale shadow-soft"
+                      className="group relative aspect-square overflow-hidden rounded-xl cursor-pointer tap-scale transition-ritual shadow-soft"
                       onClick={() => navigate(`/post/${post.id}`)}
                     >
                       <img src={post.image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent p-3 pt-8">
-                        <button onClick={(e) => { e.stopPropagation(); navigate(`/user/${post.user_id}`); }} className="text-left">
+                        <button onClick={(e) => { e.stopPropagation(); navigate(`/user/${post.user_id}`); }} className="text-left tap-scale">
                           <p className="text-[13px] font-semibold text-white">{post.user.username}</p>
                           {post.city && <p className="text-[11px] text-white/60 mt-0.5">{post.city}</p>}
                         </button>
