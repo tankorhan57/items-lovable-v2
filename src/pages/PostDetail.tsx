@@ -140,23 +140,23 @@ export default function PostDetail() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg px-4 pt-12 pb-3 flex items-center justify-between">
-        <button onClick={() => navigate(-1)} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg px-4 pt-12 pb-3 flex items-center justify-between border-b border-border">
+        <button onClick={() => navigate(-1)} className="p-2 text-muted-foreground hover:text-foreground transition-ritual tap-scale">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <p className="text-sm font-medium text-foreground">Post</p>
-        <button onClick={() => navigate(-1)} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
+        <button onClick={() => navigate(-1)} className="p-2 text-muted-foreground hover:text-foreground transition-ritual tap-scale">
           <X className="h-5 w-5" />
         </button>
       </div>
 
-      <div className="px-1">
+      <div className="px-1 pt-1">
         <SwipeReaction
           currentReaction={myReaction}
           disabled={post.user_id === user?.id}
           onReact={handleReact}
         >
-          <div className="bg-muted animate-scale-in">
+          <div className="bg-muted animate-scale-in rounded-xl overflow-hidden">
             <img
               src={post.image_url}
               alt=""
@@ -171,16 +171,16 @@ export default function PostDetail() {
         <div className="px-6 pt-2 animate-fade-in">
           <button
             onClick={() => { setShowNotePrompt(false); setNoteOpen(true); }}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="text-xs text-muted-foreground hover:text-foreground transition-ritual"
           >
             Add a note? →
           </button>
         </div>
       )}
 
-      <div className="px-6 py-4 space-y-4">
+      <div className="px-6 py-5 space-y-5">
         <div className="flex items-center justify-between">
-          <button onClick={() => navigate(`/user/${post.user_id}`)} className="flex items-center gap-3">
+          <button onClick={() => navigate(`/user/${post.user_id}`)} className="flex items-center gap-3 tap-scale">
             <RitualAvatar
               src={post.avatar_url}
               fallback={post.username[0]?.toUpperCase()}
@@ -198,7 +198,7 @@ export default function PostDetail() {
               postOwnerId={post.user_id}
               onShowAppreciators={() => setAppreciatorsOpen(true)}
             />
-            <button onClick={() => setNoteOpen(true)} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
+            <button onClick={() => setNoteOpen(true)} className="p-2 text-muted-foreground hover:text-foreground transition-ritual tap-scale">
               <MessageSquare className="h-5 w-5" />
             </button>
           </div>
@@ -210,7 +210,7 @@ export default function PostDetail() {
           refreshKey={reactionRefresh}
         />
 
-        <div className="flex items-end justify-between">
+        <div className="flex items-end justify-between pt-2 border-t border-border">
           <div className="space-y-1">
             <p className="text-meta">
               {format(new Date(post.confirmed_at), "MMM d, yyyy • HH:mm")}
@@ -233,7 +233,7 @@ export default function PostDetail() {
                   navigate(-1);
                 }
               }}
-              className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+              className="p-2 text-muted-foreground hover:text-destructive transition-ritual tap-scale"
             >
               <Trash2 className="h-4 w-4" />
             </button>
