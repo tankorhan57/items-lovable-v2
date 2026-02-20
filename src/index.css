@@ -56,33 +56,50 @@
   }
 
   .dark {
-    --background: 0 0% 7%;
-    --foreground: 0 0% 93%;
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 93%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 93%;
-    --primary: 9 90% 58%;
-    --primary-foreground: 0 0% 7%;
-    --secondary: 0 0% 14%;
+    /* Deep charcoal base — not pure black */
+    --background: 240 5% 6%;         /* #0F0F11 */
+    --foreground: 0 0% 95%;          /* #F2F2F2 */
+
+    /* Elevated card surface — clear separation from bg */
+    --card: 240 4% 11%;              /* #1A1A1D */
+    --card-foreground: 0 0% 95%;
+
+    --popover: 240 4% 11%;
+    --popover-foreground: 0 0% 95%;
+
+    /* Coral accent — slightly brighter for dark bg */
+    --primary: 9 95% 62%;            /* #FF6347-ish */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 4% 15%;         /* #242428 */
     --secondary-foreground: 0 0% 88%;
-    --muted: 0 0% 16%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 9 90% 58%;
-    --accent-foreground: 0 0% 7%;
-    --destructive: 0 62% 45%;
-    --destructive-foreground: 0 0% 93%;
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 9 90% 58%;
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 9 90% 58%;
-    --sidebar-primary-foreground: 0 0% 7%;
-    --sidebar-accent: 0 0% 14%;
-    --sidebar-accent-foreground: 0 0% 85%;
-    --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 9 90% 58%;
+
+    --muted: 240 3% 18%;
+    --muted-foreground: 0 0% 52%;    /* #858585 — readable on dark */
+
+    --accent: 9 95% 62%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 65% 48%;
+    --destructive-foreground: 0 0% 95%;
+
+    /* Subtle but visible borders */
+    --border: 240 4% 20%;            /* #303035 */
+    --input: 240 4% 20%;
+    --ring: 9 95% 62%;
+
+    --sidebar-background: 240 5% 7%;
+    --sidebar-foreground: 0 0% 88%;
+    --sidebar-primary: 9 95% 62%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4% 15%;
+    --sidebar-accent-foreground: 0 0% 88%;
+    --sidebar-border: 240 4% 20%;
+    --sidebar-ring: 9 95% 62%;
+
+    --shadow-soft: 0 1px 3px 0 hsl(0 0% 0% / 0.2), 0 1px 2px -1px hsl(0 0% 0% / 0.15);
+    --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.3), 0 1px 3px -1px hsl(0 0% 0% / 0.2);
+    --shadow-elevated: 0 8px 24px -4px hsl(0 0% 0% / 0.4), 0 2px 6px -2px hsl(0 0% 0% / 0.25);
   }
 }
 
