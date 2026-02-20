@@ -64,50 +64,52 @@ export default function Auth() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-6">
       <div className="w-full max-w-sm animate-fade-in">
-        <div className="mb-10 text-center">
+        <div className="mb-12 text-center">
           <h1 className="text-5xl font-serif tracking-tight text-foreground">Items.</h1>
           <p className="mt-3 text-muted-foreground text-sm">
             One prompt. One photo. A shared moment.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
+        <div className="surface-card p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
+              <Input
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="bg-background border-border"
+                required
+              />
+            )}
             <Input
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="bg-card border-border"
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="bg-background border-border"
               required
             />
-          )}
-          <Input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="bg-card border-border"
-            required
-          />
-          <Input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="bg-card border-border"
-            minLength={6}
-            required
-          />
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "..." : isLogin ? "Sign in" : "Create account"}
-          </Button>
-        </form>
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-background border-border"
+              minLength={6}
+              required
+            />
+            <Button type="submit" className="w-full tap-scale" disabled={loading}>
+              {loading ? "..." : isLogin ? "Sign in" : "Create account"}
+            </Button>
+          </form>
+        </div>
 
         <button
           onClick={() => setIsLogin(!isLogin)}
-          className="mt-6 w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="mt-8 w-full text-center text-sm text-muted-foreground hover:text-foreground transition-ritual"
         >
           {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
         </button>
