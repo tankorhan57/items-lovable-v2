@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Settings, Calendar, Archive, Flame } from "lucide-react";
+import { Settings, Calendar, Archive } from "lucide-react";
 import { format } from "date-fns";
 import RitualAvatar from "@/components/RitualAvatar";
 
@@ -106,24 +106,19 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* Streak card — calm continuity indicator */}
+        {/* Streak — quiet continuity numbers */}
         {streak > 0 && (
-          <div className="mb-4 p-3.5 surface-card border border-border flex items-center gap-3.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <Flame className="h-5 w-5 text-primary/80" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-semibold text-foreground">
-                {streak} day{streak !== 1 ? "s" : ""}{graceUsed ? " (grace)" : ""}
+          <div className="flex items-center gap-4 mb-4">
+            <p className="text-[13px]">
+              <span className="font-bold text-foreground">{streak}</span>{" "}
+              <span className="text-muted-foreground">day{streak !== 1 ? "s" : ""}</span>
+            </p>
+            {longestStreak > 0 && longestStreak >= streak && (
+              <p className="text-[13px]">
+                <span className="text-muted-foreground">best:</span>{" "}
+                <span className="font-bold text-foreground">{longestStreak}</span>
               </p>
-              <p className="text-meta">
-                {longestStreak > streak
-                  ? `Longest: ${longestStreak} days`
-                  : streak >= 7
-                    ? "Personal best"
-                    : "Current streak"}
-              </p>
-            </div>
+            )}
           </div>
         )}
 
