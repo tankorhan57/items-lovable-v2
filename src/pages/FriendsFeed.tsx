@@ -202,13 +202,13 @@ export default function FriendsFeed() {
 
   return (
     <div className="fixed inset-0 bg-black z-50 overflow-hidden">
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-12 pb-3 flex items-center justify-between bg-gradient-to-b from-black/50 to-transparent pointer-events-none">
-        <button onClick={() => navigate(-1)} className="p-2 text-white/80 hover:text-white transition-ritual tap-scale pointer-events-auto">
+      {/* Editorial header — clean, minimal */}
+      <div className="absolute top-0 left-0 right-0 z-30 px-5 pt-12 pb-4 flex items-center justify-between bg-gradient-to-b from-black/60 via-black/20 to-transparent pointer-events-none">
+        <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-white/80 hover:text-white transition-ritual tap-scale pointer-events-auto">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <span className="text-meta text-white/50">
-          {currentIndex + 1} / {posts.length}
+        <span className="text-[11px] font-medium tracking-wider uppercase text-white/35 tabular-nums">
+          {currentIndex + 1} of {posts.length}
         </span>
         <div className="w-9" />
       </div>
@@ -232,33 +232,39 @@ export default function FriendsFeed() {
                 src={item.image_url}
                 alt=""
                 className="h-full w-full object-cover"
-                style={{ opacity: isActive ? 1 : 0.4, transition: "opacity 200ms ease" }}
+                style={{ opacity: isActive ? 1 : 0.3, transition: "opacity 300ms ease" }}
               />
             </div>
           </HorizontalReaction>
         )}
         renderOverlay={(item) => (
-          <div className="absolute bottom-0 left-0 right-0 z-20 px-5 pb-10 pt-16 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
+          <div className="absolute bottom-0 left-0 right-0 z-20 px-5 pb-8 pt-24 bg-gradient-to-t from-black/70 via-black/25 to-transparent pointer-events-none">
             <div className="flex items-end justify-between">
-              <div className="space-y-1 pointer-events-auto">
-                <button onClick={() => navigate(`/user/${item.user_id}`)} className="flex items-center gap-2 tap-scale transition-ritual">
-                  {item.avatar_url && (
-                    <img src={item.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover border border-white/20" />
+              <div className="pointer-events-auto">
+                <button onClick={() => navigate(`/user/${item.user_id}`)} className="flex items-center gap-2.5 tap-scale transition-ritual mb-1.5">
+                  {item.avatar_url ? (
+                    <img src={item.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover ring-1 ring-white/15" />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center text-xs font-semibold text-white/80">
+                      {(item.display_name || item.username).charAt(0).toUpperCase()}
+                    </div>
                   )}
-                  <span className="text-sm font-semibold text-white/90">
+                  <span className="text-[14px] font-bold text-white/95 tracking-[-0.01em]">
                     {item.display_name || item.username}
                   </span>
                 </button>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-white/50">{dateLabel}</span>
-                  {item.city && <span className="text-[11px] text-white/40">· {item.city}</span>}
+                <div className="flex items-center gap-2 pl-[42px] mb-1">
+                  <span className="text-[11px] text-white/40">{dateLabel}</span>
+                  {item.city && <span className="text-[11px] text-white/30">· {item.city}</span>}
                 </div>
-                <ReactionDisplay postId={item.id} isOwner={false} refreshKey={reactionRefresh} compact />
+                <div className="pl-[42px]">
+                  <ReactionDisplay postId={item.id} isOwner={false} refreshKey={reactionRefresh} compact />
+                </div>
               </div>
 
               <button
                 onClick={() => setNotePostId(item.id)}
-                className="p-2.5 rounded-full bg-white/10 backdrop-blur-sm text-white/70 hover:text-white transition-ritual tap-scale pointer-events-auto"
+                className="p-2.5 rounded-full bg-white/10 backdrop-blur-md text-white/60 hover:text-white hover:bg-white/20 transition-ritual tap-scale pointer-events-auto"
               >
                 <MessageSquare className="h-4 w-4" />
               </button>
@@ -267,8 +273,8 @@ export default function FriendsFeed() {
         )}
       />
 
-      {/* Scroll indicators */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-1 pointer-events-none">
+      {/* Scroll indicator — editorial thin line */}
+      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-[3px] pointer-events-none">
         {Array.from({ length: Math.min(7, posts.length) }).map((_, i) => {
           const startIdx = Math.max(0, Math.min(currentIndex - 3, posts.length - 7));
           const idx = startIdx + i;
@@ -276,8 +282,8 @@ export default function FriendsFeed() {
           return (
             <div
               key={idx}
-              className={`w-1 rounded-full transition-all duration-200 ${
-                idx === currentIndex ? "h-4 bg-white/70" : "h-1.5 bg-white/20"
+              className={`w-[2px] rounded-full transition-all duration-300 ${
+                idx === currentIndex ? "h-5 bg-white/60" : "h-1.5 bg-white/15"
               }`}
             />
           );

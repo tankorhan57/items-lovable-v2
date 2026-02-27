@@ -225,7 +225,7 @@ export default function FollowingFeedTab() {
                 src={item.image_url}
                 alt=""
                 className="h-full w-full object-cover"
-                style={{ opacity: isActive ? 1 : 0.4, transition: "opacity 200ms ease" }}
+                style={{ opacity: isActive ? 1 : 0.3, transition: "opacity 300ms ease" }}
               />
             </div>
           </HorizontalReaction>
@@ -236,24 +236,24 @@ export default function FollowingFeedTab() {
             : format(new Date(item.confirmed_at), "MMM d");
 
           return (
-            <div className="absolute bottom-0 left-0 right-0 z-20 px-5 pb-6 pt-20 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
+            <div className="absolute bottom-0 left-0 right-0 z-20 px-5 pb-5 pt-24 bg-gradient-to-t from-black/70 via-black/25 to-transparent pointer-events-none">
               <div className="flex items-end justify-between">
-                <div className="space-y-1 pointer-events-auto">
-                  <button onClick={() => navigate(`/user/${item.user_id}`)} className="flex items-center gap-2.5">
+                <div className="pointer-events-auto">
+                  <button onClick={() => navigate(`/user/${item.user_id}`)} className="flex items-center gap-2.5 tap-scale transition-ritual mb-1.5">
                     {item.avatar_url ? (
-                      <img src={item.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover ring-1 ring-white/20" />
+                      <img src={item.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover ring-1 ring-white/15" />
                     ) : (
-                      <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-medium text-white">
+                      <div className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center text-xs font-semibold text-white/80">
                         {(item.display_name || item.username).charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <span className="text-sm font-bold text-white/95">
+                    <span className="text-[14px] font-bold text-white/95 tracking-[-0.01em]">
                       {item.display_name || item.username}
                     </span>
                   </button>
-                  <div className="flex items-center gap-2 pl-[42px]">
-                    <span className="text-[11px] text-white/50">{dateLabel}</span>
-                    {item.city && <span className="text-[11px] text-white/40">· {item.city}</span>}
+                  <div className="flex items-center gap-2 pl-[42px] mb-1">
+                    <span className="text-[11px] text-white/40">{dateLabel}</span>
+                    {item.city && <span className="text-[11px] text-white/30">· {item.city}</span>}
                   </div>
                   <div className="pl-[42px]">
                     <ReactionDisplay postId={item.id} isOwner={false} refreshKey={reactionRefresh} compact />
@@ -261,7 +261,7 @@ export default function FollowingFeedTab() {
                 </div>
                 <button
                   onClick={() => setNotePostId(item.id)}
-                  className="p-2.5 rounded-full bg-white/10 backdrop-blur-sm text-white/70 hover:text-white transition-colors pointer-events-auto"
+                  className="p-2.5 rounded-full bg-white/10 backdrop-blur-md text-white/60 hover:text-white hover:bg-white/20 transition-ritual tap-scale pointer-events-auto"
                 >
                   <MessageSquare className="h-4 w-4" />
                 </button>
@@ -271,7 +271,7 @@ export default function FollowingFeedTab() {
         }}
       />
 
-      {/* Minimal progress indicator */}
+      {/* Editorial progress indicator */}
       <div className="absolute right-2.5 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-[3px] pointer-events-none">
         {Array.from({ length: Math.min(7, posts.length) }).map((_, i) => {
           const startIdx = Math.max(0, Math.min(currentIndex - 3, posts.length - 7));
@@ -280,18 +280,18 @@ export default function FollowingFeedTab() {
           return (
             <div
               key={idx}
-              className={`w-[3px] rounded-full transition-all duration-300 ${
-                idx === currentIndex ? "h-4 bg-white/70" : "h-[5px] bg-white/20"
+              className={`w-[2px] rounded-full transition-all duration-300 ${
+                idx === currentIndex ? "h-5 bg-white/60" : "h-[5px] bg-white/15"
               }`}
             />
           );
         })}
       </div>
 
-      {/* Post counter */}
+      {/* Counter */}
       <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-        <span className="text-[10px] font-medium text-white/40 tabular-nums">
-          {currentIndex + 1} / {posts.length}
+        <span className="text-[10px] font-medium tracking-wider uppercase text-white/30 tabular-nums">
+          {currentIndex + 1} of {posts.length}
         </span>
       </div>
 

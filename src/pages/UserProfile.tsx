@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Calendar, Lock, Flame } from "lucide-react";
+import { ArrowLeft, Calendar, Lock } from "lucide-react";
 import { format } from "date-fns";
 import FollowButton from "@/components/FollowButton";
 import { Badge } from "@/components/ui/badge";
@@ -210,20 +210,19 @@ export default function UserProfile() {
           </button>
         </div>
 
-        {/* Streak indicator — subtle, non-competitive */}
+        {/* Streak — quiet numbers */}
         {streak > 0 && (
-          <div className="mb-4 p-3 surface-card border border-border flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
-              <Flame className="h-4.5 w-4.5 text-primary/80" />
-            </div>
-            <div>
-              <p className="text-[13px] font-semibold text-foreground">
-                {streak} day{streak !== 1 ? "s" : ""} streak
+          <div className="flex items-center gap-4 mb-4">
+            <p className="text-[13px]">
+              <span className="font-bold text-foreground">{streak}</span>{" "}
+              <span className="text-muted-foreground">day{streak !== 1 ? "s" : ""}</span>
+            </p>
+            {longestStreak > 0 && longestStreak >= streak && (
+              <p className="text-[13px]">
+                <span className="text-muted-foreground">best:</span>{" "}
+                <span className="font-bold text-foreground">{longestStreak}</span>
               </p>
-              {longestStreak > streak && (
-                <p className="text-meta">Longest: {longestStreak} days</p>
-              )}
-            </div>
+            )}
           </div>
         )}
 
