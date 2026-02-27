@@ -63,17 +63,17 @@ export default function Search() {
     <div className="flex items-center gap-3 py-3">
       <button
         onClick={() => navigate(`/user/${u.id}`)}
-        className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0"
+        className="h-11 w-11 rounded-full bg-secondary border border-border flex items-center justify-center overflow-hidden shrink-0 tap-scale transition-ritual"
       >
         {u.avatar_url ? (
           <img src={u.avatar_url} alt="" className="h-full w-full object-cover" />
         ) : (
-          <span className="text-sm font-serif text-muted-foreground">{u.username[0]?.toUpperCase()}</span>
+          <span className="text-sm font-serif font-bold text-muted-foreground">{u.username[0]?.toUpperCase()}</span>
         )}
       </button>
-      <button onClick={() => navigate(`/user/${u.id}`)} className="flex-1 min-w-0 text-left">
-        <p className="text-sm font-medium text-foreground truncate">{u.display_name || u.username}</p>
-        <p className="text-xs text-muted-foreground">@{u.username}</p>
+      <button onClick={() => navigate(`/user/${u.id}`)} className="flex-1 min-w-0 text-left tap-scale transition-ritual">
+        <p className="text-[14px] font-semibold text-foreground truncate">{u.display_name || u.username}</p>
+        <p className="text-meta">@{u.username}</p>
       </button>
       <FollowButton targetUserId={u.id} isPrivate={u.is_private} />
     </div>
@@ -84,34 +84,34 @@ export default function Search() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <div className="px-6 pt-12 pb-4">
+      <div className="px-6 pt-12 pb-3">
         <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={() => navigate(-1)} className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary tap-scale transition-ritual">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-2xl font-serif text-foreground">Search</h1>
+          <h1 className="font-serif text-[28px] font-bold tracking-[-0.01em] text-foreground">Search</h1>
         </div>
 
         <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by username or name..."
-            className="pl-9 bg-card"
+            className="pl-10 bg-card border-border shadow-soft rounded-xl h-11"
             autoFocus
           />
         </div>
       </div>
 
-      <div className="px-6">
-        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">{sectionTitle}</p>
+      <div className="px-6 pt-1">
+        <p className="text-[11px] uppercase tracking-widest font-semibold text-muted-foreground mb-2">{sectionTitle}</p>
 
         {searching ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
+              <div key={i} className="flex items-center gap-3 py-3">
+                <div className="h-11 w-11 rounded-full bg-muted animate-pulse" />
                 <div className="flex-1 space-y-1.5">
                   <div className="h-3 w-1/2 rounded bg-muted animate-pulse" />
                   <div className="h-2 w-1/3 rounded bg-muted animate-pulse" />
@@ -121,10 +121,10 @@ export default function Search() {
           </div>
         ) : displayList.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
-            <h3 className="font-serif text-lg text-foreground mb-1">
+            <h3 className="font-serif text-xl font-bold text-foreground mb-1">
               {query.trim() ? "No users found." : "No suggestions available."}
             </h3>
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="text-meta text-center">
               {query.trim() ? "Try a different username." : ""}
             </p>
           </div>

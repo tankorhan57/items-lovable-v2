@@ -33,13 +33,14 @@ const getIcon = (type: string) => {
 };
 
 const getMessage = (type: string, username: string) => {
+  const u = username || "";
   switch (type) {
-    case "appreciation": return `${username} appreciated your photo`;
-    case "follow": return `${username} started following you`;
-    case "follow_request": return `${username} requested to follow you`;
-    case "follow_accepted": return `${username} accepted your follow request`;
-    case "note": return `${username} sent you a private note`;
-    default: return `${username} interacted with you`;
+    case "appreciation": return `${u} appreciated your photo`.trim();
+    case "follow": return `${u} started following you`.trim();
+    case "follow_request": return `${u} requested to follow you`.trim();
+    case "follow_accepted": return `${u} accepted your follow request`.trim();
+    case "note": return `${u} sent you a private note`.trim();
+    default: return `${u} interacted with you`.trim();
   }
 };
 
@@ -147,16 +148,16 @@ export default function Activity() {
 
   return (
     <div ref={containerRef} {...pullHandlers} className="min-h-screen bg-background animate-fade-in overflow-y-auto">
-      <div className="px-6 pt-12 pb-4">
-        <h1 className="text-lg font-serif text-foreground">Activity</h1>
+      <div className="px-6 pt-12 pb-3">
+        <h1 className="font-serif text-[28px] font-bold tracking-[-0.01em] text-foreground">Activity</h1>
       </div>
 
       <PullIndicator />
 
       {loading ? (
-        <div className="px-6 space-y-4">
+        <div className="px-6 space-y-3 pt-2">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3">
+            <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
               <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
               <div className="flex-1 space-y-1.5">
                 <div className="h-3 w-3/4 rounded bg-muted animate-pulse" />
@@ -166,29 +167,36 @@ export default function Activity() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 px-6">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary mb-3">
+        <div className="flex flex-col items-center justify-center py-20 px-6">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary border border-border mb-4">
             <Bell className="h-6 w-6 text-muted-foreground" />
           </div>
-          <h3 className="font-serif text-lg text-foreground mb-1">No interactions yet.</h3>
-          <p className="text-meta text-center">
+          <h3 className="font-serif text-xl font-bold text-foreground mb-1">No interactions yet.</h3>
+          <p className="text-meta text-center max-w-[240px]">
             When someone appreciates or follows you, it will appear here.
           </p>
         </div>
       ) : (
-        <div className="px-6 space-y-2">
+        <div className="px-4 space-y-1.5 pt-1">
           {items.map((item) => {
             const Icon = getIcon(item.type);
             return (
-              <button key={item.id} onClick={() => handleTap(item)} className="flex items-center gap-3 p-4 w-full text-left rounded-xl bg-card border border-border transition-ritual active:scale-[0.98]">
+              <button
+                key={item.id}
+                onClick={() => handleTap(item)}
+                className="flex items-center gap-3 p-3.5 w-full text-left rounded-xl bg-card border border-border shadow-soft tap-scale transition-ritual"
+              >
                 <RitualAvatar
                   src={item.actor_avatar}
                   fallback={item.actor_username[0]?.toUpperCase()}
                   size="md"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground">{getMessage(item.type, item.actor_username)}</p>
-                  <p className="text-meta">
+                  <p className="text-[14px] text-foreground leading-snug">
+                    <span className="font-semibold">{item.actor_username}</span>{" "}
+                    {getMessage(item.type, "").trim()}
+                  </p>
+                  <p className="text-meta mt-0.5">
                     {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                   </p>
                 </div>
@@ -196,13 +204,13 @@ export default function Activity() {
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       onClick={(e) => { e.stopPropagation(); handleFollowAction(item, true); }}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground tap-scale transition-ritual"
                     >
                       <Check className="h-3.5 w-3.5" />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); handleFollowAction(item, false); }}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-muted-foreground"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-muted-foreground border border-border tap-scale transition-ritual"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
