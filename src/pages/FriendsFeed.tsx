@@ -175,8 +175,19 @@ export default function FriendsFeed() {
         <button onClick={() => navigate(-1)} className="absolute top-12 left-4 p-2 text-muted-foreground tap-scale transition-ritual">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h2 className="text-xl font-serif text-foreground mb-2">No friend posts yet</h2>
-        <p className="text-meta text-center max-w-xs">Your friends haven't posted recently.</p>
+        <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium mb-3">Today's Item</p>
+        <p className="text-[20px] italic font-serif text-foreground/70 text-center mb-8 max-w-[260px] leading-relaxed">
+          The same prompt, seen through different eyes.
+        </p>
+        <p className="text-[13px] text-muted-foreground text-center mb-6 max-w-[240px]">
+          Your friends haven't posted recently.
+        </p>
+        <button
+          onClick={() => navigate("/search")}
+          className="rounded-full border border-border px-5 py-2 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+        >
+          Find people
+        </button>
       </div>
     );
   }
@@ -192,6 +203,7 @@ export default function FriendsFeed() {
           users={followedUsers}
           onBackToTop={() => { setShowOverview(false); setCurrentIndex(0); }}
           onRefresh={loadFeed}
+          totalPosts={posts.length}
         />
       </div>
     );

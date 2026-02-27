@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowUp, Globe, RefreshCw } from "lucide-react";
+import { ArrowUp, RefreshCw } from "lucide-react";
 import { isToday } from "date-fns";
 
 interface FollowedUser {
@@ -18,9 +18,11 @@ interface FollowingOverviewProps {
   users: FollowedUser[];
   onBackToTop: () => void;
   onRefresh: () => void;
+  todayPrompt?: string | null;
+  totalPosts?: number;
 }
 
-export default function FollowingOverview({ users, onBackToTop, onRefresh }: FollowingOverviewProps) {
+export default function FollowingOverview({ users, onBackToTop, onRefresh, todayPrompt, totalPosts }: FollowingOverviewProps) {
   const navigate = useNavigate();
 
   // Sort: posted today first, then alphabetical
@@ -35,9 +37,21 @@ export default function FollowingOverview({ users, onBackToTop, onRefresh }: Fol
   return (
     <div className="h-screen w-full bg-background flex flex-col">
       <div className="flex-1 overflow-y-auto px-5 pt-16 pb-8">
+        {/* Completion card */}
         <div className="text-center mb-8">
-          <h2 className="text-xl font-serif text-foreground mb-1">You're all caught up</h2>
-          <p className="text-meta text-sm">Here's everyone you follow</p>
+          {todayPrompt && (
+            <>
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium mb-2">Today's Item</p>
+              <p className="text-[22px] italic font-serif text-foreground/70 leading-relaxed mb-3">
+                "{todayPrompt}"
+              </p>
+            </>
+          )}
+          {typeof totalPosts === "number" && totalPosts > 0 && (
+            <p className="text-[12px] text-muted-foreground">
+              {totalPosts} moment{totalPosts !== 1 ? "s" : ""} shared today
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-3 gap-3">
@@ -92,28 +106,21 @@ export default function FollowingOverview({ users, onBackToTop, onRefresh }: Fol
         </div>
       </div>
 
-      {/* CTAs */}
+      {/* Quiet actions */}
       <div className="flex items-center justify-center gap-4 py-5 border-t border-border bg-background">
         <button
           onClick={onBackToTop}
-          className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium text-foreground bg-muted/60 hover:bg-muted transition-colors"
+          className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowUp className="h-3.5 w-3.5" />
           Back to top
         </button>
         <button
           onClick={onRefresh}
-          className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium text-foreground bg-muted/60 hover:bg-muted transition-colors"
+          className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           Refresh
-        </button>
-        <button
-          onClick={() => navigate("/explore")}
-          className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/15 transition-colors"
-        >
-          <Globe className="h-3.5 w-3.5" />
-          World
         </button>
       </div>
     </div>
