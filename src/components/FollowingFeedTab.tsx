@@ -3,6 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { isToday, format } from "date-fns";
+
 import { MessageSquare } from "lucide-react";
 import HorizontalReaction from "@/components/HorizontalReaction";
 import type { DirectionKey } from "@/hooks/use-reaction-config";
@@ -44,6 +45,7 @@ export default function FollowingFeedTab() {
   const [notePostId, setNotePostId] = useState<string | null>(null);
   const [showOverview, setShowOverview] = useState(false);
   const [swipeState, setSwipeState] = useState<HorizontalSwipeState>({ dx: 0, phase: "idle", velocity: 0 });
+  const [todayPrompt, setTodayPrompt] = useState<string | null>(null);
 
   const loadFeed = useCallback(async () => {
     if (!user) return;
@@ -58,6 +60,12 @@ export default function FollowingFeedTab() {
       .eq("status", "accepted");
 
     const ids = following?.map(f => f.following_id) || [];
+
+    // Fetch today's prompt for empty state
+    const today = new Date().toISOString().split("T")[0];
+    const { data: dailyItem } = await supabase.from("daily_items").select("prompt_text").eq("active_date", today).single();
+    setTodayPrompt(dailyItem?.prompt_text || null);
+
     if (ids.length === 0) { setLoading(false); return; }
 
     const tenDaysAgo = new Date();
@@ -178,11 +186,23 @@ export default function FollowingFeedTab() {
 
   if (posts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 px-6">
-        <h3 className="font-serif text-lg text-foreground mb-1">Your circle is quiet.</h3>
-        <p className="text-meta text-center mb-4">Follow someone to see their moments.</p>
-        <button onClick={() => navigate("/search")} className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground">
-          Discover people
+      <div className="flex flex-col items-center justify-center py-32 px-8">
+        {todayPrompt && (
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium mb-3">Today's Item</p>
+        )}
+        {todayPrompt && (
+          <p className="text-[20px] italic font-serif text-foreground/70 text-center mb-8 max-w-[260px] leading-relaxed">
+            "{todayPrompt}"
+          </p>
+        )}
+        <p className="text-[13px] text-muted-foreground text-center mb-6 max-w-[240px]">
+          The same prompt, seen through different eyes.
+        </p>
+        <button
+          onClick={() => navigate("/search")}
+          className="rounded-full border border-border px-5 py-2 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+        >
+          Find people
         </button>
       </div>
     );
@@ -194,6 +214,8 @@ export default function FollowingFeedTab() {
         users={followedUsers}
         onBackToTop={() => { setShowOverview(false); setCurrentIndex(0); }}
         onRefresh={loadFeed}
+        todayPrompt={todayPrompt}
+        totalPosts={posts.length}
       />
     );
   }

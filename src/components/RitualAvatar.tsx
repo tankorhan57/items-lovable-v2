@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
@@ -22,28 +23,35 @@ const sizeMap = {
   lg: "h-16 w-16",
 } as const;
 
-export default function RitualAvatar({ src, fallback, streak = 0, size = "md", className }: RitualAvatarProps) {
-  const ringClass = getStreakRingClass(streak);
+const RitualAvatar = forwardRef<HTMLSpanElement, RitualAvatarProps>(
+  ({ src, fallback, streak = 0, size = "md", className }, ref) => {
+    const ringClass = getStreakRingClass(streak);
 
-  return (
-    <Avatar
-      className={cn(
-        sizeMap[size],
-        ringClass,
-        "transition-all duration-300 ease-out",
-        className
-      )}
-    >
-      {src && (
-        <AvatarImage
-          src={src}
-          alt=""
-          className="transition-opacity duration-300 ease-in-out"
-        />
-      )}
-      <AvatarFallback className="bg-secondary text-muted-foreground font-serif">
-        {fallback || "?"}
-      </AvatarFallback>
-    </Avatar>
-  );
-}
+    return (
+      <Avatar
+        ref={ref}
+        className={cn(
+          sizeMap[size],
+          ringClass,
+          "transition-all duration-300 ease-out",
+          className
+        )}
+      >
+        {src && (
+          <AvatarImage
+            src={src}
+            alt=""
+            className="transition-opacity duration-300 ease-in-out"
+          />
+        )}
+        <AvatarFallback className="bg-secondary text-muted-foreground font-serif">
+          {fallback || "?"}
+        </AvatarFallback>
+      </Avatar>
+    );
+  }
+);
+
+RitualAvatar.displayName = "RitualAvatar";
+
+export default RitualAvatar;
