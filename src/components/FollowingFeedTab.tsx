@@ -5,13 +5,11 @@ import { useNavigate } from "react-router-dom";
 import { isToday, format } from "date-fns";
 
 import { MessageSquare } from "lucide-react";
-import HorizontalReaction from "@/components/HorizontalReaction";
 import type { DirectionKey } from "@/hooks/use-reaction-config";
-import type { HorizontalSwipeState } from "@/components/PhotoFeedPager";
 type ReactionDirection = DirectionKey;
 import ReactionDisplay from "@/components/ReactionDisplay";
 import NoteComposer from "@/components/NoteComposer";
-import PhotoFeedPager from "@/components/PhotoFeedPager";
+import CardStack from "@/components/CardStack";
 import FollowingOverview from "@/components/FollowingOverview";
 
 interface FeedPost {
@@ -39,19 +37,16 @@ export default function FollowingFeedTab() {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [followedUsers, setFollowedUsers] = useState<FollowedUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [reactions, setReactions] = useState<Record<string, ReactionDirection | null>>({});
   const [reactionRefresh, setReactionRefresh] = useState(0);
   const [notePostId, setNotePostId] = useState<string | null>(null);
   const [showOverview, setShowOverview] = useState(false);
-  const [swipeState, setSwipeState] = useState<HorizontalSwipeState>({ dx: 0, phase: "idle", velocity: 0 });
   const [todayPrompt, setTodayPrompt] = useState<string | null>(null);
 
   const loadFeed = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     setShowOverview(false);
-    setCurrentIndex(0);
 
     const { data: following } = await supabase
       .from("follows")
@@ -61,7 +56,6 @@ export default function FollowingFeedTab() {
 
     const ids = following?.map(f => f.following_id) || [];
 
-    // Fetch today's prompt for empty state
     const today = new Date().toISOString().split("T")[0];
     const { data: dailyItem } = await supabase.from("daily_items").select("prompt_text").eq("active_date", today).single();
     setTodayPrompt(dailyItem?.prompt_text || null);
@@ -133,48 +127,20 @@ export default function FollowingFeedTab() {
 
   useEffect(() => { loadFeed(); }, [loadFeed]);
 
-  const handleReact = useCallback(async (postId: string, direction: ReactionDirection) => {
-    if (!user) return;
-    const current = reactions[postId];
-    if (current === direction) {
-      setReactions(prev => ({ ...prev, [postId]: null }));
-      setReactionRefresh(r => r + 1);
-      await supabase.from("post_reactions").delete().eq("post_id", postId).eq("user_id", user.id);
-      return;
-    }
-    const isNew = !current;
-    setReactions(prev => ({ ...prev, [postId]: direction }));
+  const handleSwipe = useCallback(async (item: FeedPost, direction: DirectionKey) => {
+    if (!user || item.user_id === user.id) return;
+    const current = reactions[item.id];
+    if (current === direction) return; // already same reaction
+
+    setReactions(prev => ({ ...prev, [item.id]: direction }));
     setReactionRefresh(r => r + 1);
-    if (isNew) {
-      await supabase.from("post_reactions").insert({ user_id: user.id, post_id: postId, reaction_type: direction });
+
+    if (!current) {
+      await supabase.from("post_reactions").insert({ user_id: user.id, post_id: item.id, reaction_type: direction });
     } else {
-      await supabase.from("post_reactions").update({ reaction_type: direction }).eq("post_id", postId).eq("user_id", user.id);
+      await supabase.from("post_reactions").update({ reaction_type: direction }).eq("post_id", item.id).eq("user_id", user.id);
     }
   }, [user, reactions]);
-
-  const handleIndexChange = useCallback((index: number) => {
-    if (index >= posts.length) {
-      setShowOverview(true);
-    } else {
-      setShowOverview(false);
-      setCurrentIndex(index);
-    }
-  }, [posts.length]);
-
-  // Measure header height to position feed correctly
-  const [headerHeight, setHeaderHeight] = useState(0);
-  useEffect(() => {
-    const header = document.querySelector('[data-feed-header]');
-    if (header) {
-      setHeaderHeight(header.getBoundingClientRect().bottom);
-    } else {
-      // Fallback: measure the sticky header above us
-      const sticky = document.querySelector('.sticky');
-      if (sticky) {
-        setHeaderHeight(sticky.getBoundingClientRect().bottom);
-      }
-    }
-  }, [loading, showOverview]);
 
   if (loading) {
     return (
@@ -212,7 +178,7 @@ export default function FollowingFeedTab() {
     return (
       <FollowingOverview
         users={followedUsers}
-        onBackToTop={() => { setShowOverview(false); setCurrentIndex(0); }}
+        onBackToTop={() => { setShowOverview(false); }}
         onRefresh={loadFeed}
         todayPrompt={todayPrompt}
         totalPosts={posts.length}
@@ -220,104 +186,60 @@ export default function FollowingFeedTab() {
     );
   }
 
-  // Bottom nav is ~65px, use fixed positioning to bypass flex chain issues
-  const bottomNavHeight = 65;
-
   return (
-    <div
-      className="fixed left-0 right-0 bg-background z-30"
-      style={{ top: `${headerHeight}px`, bottom: `${bottomNavHeight}px` }}
-    >
-      <PhotoFeedPager
+    <div className="relative w-full" style={{ height: "calc(100dvh - 140px)" }}>
+      {/* Prompt label */}
+      <div className="px-4 pt-2 pb-3">
+        <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
+      </div>
+
+      <CardStack
         items={posts}
-        currentIndex={currentIndex}
-        onIndexChange={handleIndexChange}
-        onEndReached={() => {}}
-        onHorizontalSwipe={setSwipeState}
-        useContainerHeight
-        renderItem={(item, _idx, isActive) => {
+        onSwipe={handleSwipe}
+        onEmpty={() => setShowOverview(true)}
+        renderCard={(item) => {
           const dateLabel = isToday(new Date(item.confirmed_at))
             ? "Today"
             : format(new Date(item.confirmed_at), "MMM d");
 
           return (
-            <HorizontalReaction
-              currentReaction={reactions[item.id] || null}
-              disabled={item.user_id === user?.id}
-              onReact={(dir) => handleReact(item.id, dir)}
-              swipeState={isActive ? swipeState : undefined}
-            >
-              <div className="h-full w-full flex flex-col bg-background">
-                {/* Prompt label */}
-                <div className="px-4 pt-2 pb-2">
-                  <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
+            <div className="relative w-full h-full">
+              {/* Image */}
+              <img
+                src={item.image_url}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+              {/* Gradient scrim */}
+              <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+              {/* Metadata overlay */}
+              <div className="absolute bottom-0 inset-x-0 p-4 pb-5">
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate(`/user/${item.user_id}`); }}
+                  className="tap-scale transition-ritual"
+                >
+                  <span className="text-[16px] font-bold text-white drop-shadow-sm">
+                    {item.display_name || item.username}
+                  </span>
+                </button>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[12px] text-white/70">{dateLabel}</span>
+                  {item.city && <span className="text-[12px] text-white/70">· {item.city}</span>}
                 </div>
-
-                {/* Image — edge-to-edge, grounded */}
-                <div className="mx-2 relative flex-shrink-0">
-                  <img
-                    src={item.image_url}
-                    alt=""
-                    className="w-full rounded-lg object-cover"
-                    style={{
-                      height: "60vh",
-                      opacity: isActive ? 1 : 0.3,
-                      transition: "opacity 300ms ease",
-                      boxShadow: "inset 0 8px 12px -4px rgba(0,0,0,0.02), inset 0 -8px 12px -4px rgba(0,0,0,0.02)",
-                    }}
-                  />
-                </div>
-
-                {/* Metadata below photo */}
-                <div className="px-4 pt-3 flex items-center justify-between">
-                  <div>
-                    <button onClick={() => navigate(`/user/${item.user_id}`)} className="tap-scale transition-ritual">
-                      <span className="text-[15px] font-bold text-foreground">
-                        {item.display_name || item.username}
-                      </span>
-                    </button>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[12px] text-muted-foreground">{dateLabel}</span>
-                      {item.city && <span className="text-[12px] text-muted-foreground">· {item.city}</span>}
-                    </div>
-                    <ReactionDisplay postId={item.id} isOwner={false} refreshKey={reactionRefresh} compact />
-                  </div>
+                <div className="mt-2 flex items-center justify-between">
+                  <ReactionDisplay postId={item.id} isOwner={false} refreshKey={reactionRefresh} compact />
                   <button
-                    onClick={() => setNotePostId(item.id)}
-                    className="p-2.5 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-ritual tap-scale"
+                    onClick={(e) => { e.stopPropagation(); setNotePostId(item.id); }}
+                    className="p-2 rounded-full bg-white/15 backdrop-blur-sm text-white/80 hover:text-white transition-ritual tap-scale"
                   >
                     <MessageSquare className="h-4 w-4" />
                   </button>
                 </div>
               </div>
-            </HorizontalReaction>
+            </div>
           );
         }}
       />
-
-      {/* Progress indicator */}
-      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-[3px] pointer-events-none">
-        {Array.from({ length: Math.min(7, posts.length) }).map((_, i) => {
-          const startIdx = Math.max(0, Math.min(currentIndex - 3, posts.length - 7));
-          const idx = startIdx + i;
-          if (idx >= posts.length) return null;
-          return (
-            <div
-              key={idx}
-              className={`w-[2px] rounded-full transition-all duration-300 ${
-                idx === currentIndex ? "h-5 bg-foreground/40" : "h-[5px] bg-foreground/10"
-              }`}
-            />
-          );
-        })}
-      </div>
-
-      {/* Counter */}
-      <div className="absolute top-1 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-        <span className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground tabular-nums">
-          {currentIndex + 1} of {posts.length}
-        </span>
-      </div>
 
       <NoteComposer
         postId={notePostId}
