@@ -16,6 +16,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<PostDay[]>([]);
   const [streak, setStreak] = useState(0);
+  const [longestStreak, setLongestStreak] = useState(0);
   const [graceUsed, setGraceUsed] = useState(false);
   const [totalPosts, setTotalPosts] = useState(0);
   const [followersCount, setFollowersCount] = useState(0);
@@ -51,8 +52,9 @@ export default function Profile() {
     setPosts(days);
     const { count: total } = await supabase.from("posts").select("*", { count: "exact", head: true }).eq("user_id", user.id).not("confirmed_at", "is", null);
     setTotalPosts(total || 0);
-    const { data: streakData } = await supabase.from("streaks").select("current_streak, grace_used").eq("user_id", user.id).single();
+    const { data: streakData } = await supabase.from("streaks").select("current_streak, longest_streak, grace_used").eq("user_id", user.id).single();
     setStreak(streakData?.current_streak || 0);
+    setLongestStreak((streakData as any)?.longest_streak || 0);
     setGraceUsed(streakData?.grace_used || false);
     const { count: followers } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", user.id).eq("status", "accepted");
     setFollowersCount(followers || 0);
@@ -102,18 +104,28 @@ export default function Profile() {
             <p className="text-lg font-semibold text-foreground">{followingCount}</p>
             <p className="text-meta mt-0.5">Following</p>
           </button>
-          {streak > 0 && (
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1">
-                <Flame className="h-4 w-4 text-primary/70" />
-                <p className={`text-lg font-semibold ${graceUsed ? 'text-muted-foreground' : 'text-foreground'}`}>{streak}</p>
-              </div>
-              <p className="text-meta mt-0.5">
-                {graceUsed ? "Streak (grace)" : "Streak"}
+        </div>
+
+        {/* Streak card — calm continuity indicator */}
+        {streak > 0 && (
+          <div className="mb-4 p-3.5 surface-card border border-border flex items-center gap-3.5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+              <Flame className="h-5 w-5 text-primary/80" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[14px] font-semibold text-foreground">
+                {streak} day{streak !== 1 ? "s" : ""}{graceUsed ? " (grace)" : ""}
+              </p>
+              <p className="text-meta">
+                {longestStreak > streak
+                  ? `Longest: ${longestStreak} days`
+                  : streak >= 7
+                    ? "Personal best"
+                    : "Current streak"}
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="flex items-center gap-5 text-meta">
           <div className="flex items-center gap-1.5">

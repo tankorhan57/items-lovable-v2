@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Calendar, Lock } from "lucide-react";
+import { ArrowLeft, Calendar, Lock, Flame } from "lucide-react";
 import { format } from "date-fns";
 import FollowButton from "@/components/FollowButton";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,8 @@ export default function UserProfile() {
   const [totalPosts, setTotalPosts] = useState(0);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [longestStreak, setLongestStreak] = useState(0);
   const [canView, setCanView] = useState(false);
   const [followsYou, setFollowsYou] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -95,6 +97,15 @@ export default function UserProfile() {
       .eq("follower_id", userId)
       .eq("status", "accepted");
     setFollowingCount(following || 0);
+
+    // Fetch streak data (public read)
+    const { data: streakData } = await supabase
+      .from("streaks")
+      .select("current_streak, longest_streak")
+      .eq("user_id", userId)
+      .maybeSingle();
+    setStreak(streakData?.current_streak || 0);
+    setLongestStreak((streakData as any)?.longest_streak || 0);
 
     if (viewable) {
       const days: PostDay[] = [];
@@ -161,6 +172,7 @@ export default function UserProfile() {
             <RitualAvatar
               src={profileData.avatar_url}
               fallback={profileData.username[0]?.toUpperCase()}
+              streak={streak}
               size="lg"
             />
             <div>
@@ -180,23 +192,40 @@ export default function UserProfile() {
 
         {profileData.bio && <p className="text-sm text-foreground/80 mb-6">{profileData.bio}</p>}
 
-        {/* Softened stats row */}
-        <div className="flex gap-6 mb-6">
+        {/* Stats row */}
+        <div className="flex gap-6 mb-4">
           {canView && (
             <div className="text-center">
-              <p className="text-base font-serif text-foreground/80">{totalPosts}</p>
+              <p className="text-base font-semibold text-foreground">{totalPosts}</p>
               <p className="text-meta mt-0.5">Items</p>
             </div>
           )}
-          <button onClick={() => navigate(`/user/${profileData.id}/followers`)} className="text-center">
-            <p className="text-base font-serif text-foreground/80">{followersCount}</p>
+          <button onClick={() => navigate(`/user/${profileData.id}/followers`)} className="text-center tap-scale">
+            <p className="text-base font-semibold text-foreground">{followersCount}</p>
             <p className="text-meta mt-0.5">Followers</p>
           </button>
-          <button onClick={() => navigate(`/user/${profileData.id}/following`)} className="text-center">
-            <p className="text-base font-serif text-foreground/80">{followingCount}</p>
+          <button onClick={() => navigate(`/user/${profileData.id}/following`)} className="text-center tap-scale">
+            <p className="text-base font-semibold text-foreground">{followingCount}</p>
             <p className="text-meta mt-0.5">Following</p>
           </button>
         </div>
+
+        {/* Streak indicator — subtle, non-competitive */}
+        {streak > 0 && (
+          <div className="mb-4 p-3 surface-card border border-border flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+              <Flame className="h-4.5 w-4.5 text-primary/80" />
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-foreground">
+                {streak} day{streak !== 1 ? "s" : ""} streak
+              </p>
+              {longestStreak > streak && (
+                <p className="text-meta">Longest: {longestStreak} days</p>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center gap-1.5 text-meta">
           <Calendar className="h-3.5 w-3.5" />
