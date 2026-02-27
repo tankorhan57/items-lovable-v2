@@ -338,6 +338,7 @@ export type Database = {
           grace_used: boolean
           id: string
           last_posted_date: string | null
+          longest_streak: number
           updated_at: string
           user_id: string
         }
@@ -346,6 +347,7 @@ export type Database = {
           grace_used?: boolean
           id?: string
           last_posted_date?: string | null
+          longest_streak?: number
           updated_at?: string
           user_id: string
         }
@@ -354,6 +356,7 @@ export type Database = {
           grace_used?: boolean
           id?: string
           last_posted_date?: string | null
+          longest_streak?: number
           updated_at?: string
           user_id?: string
         }
