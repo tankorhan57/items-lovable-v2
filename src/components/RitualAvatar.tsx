@@ -54,4 +54,5 @@ const RitualAvatar = forwardRef<HTMLSpanElement, RitualAvatarProps>(
 
 RitualAvatar.displayName = "RitualAvatar";
 
+
 export default RitualAvatar;
