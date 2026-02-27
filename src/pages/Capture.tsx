@@ -150,64 +150,78 @@ export default function Capture() {
   /* ── Confirmation screen ── */
   if (confirmed) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center px-6 animate-scale-in">
-        <div className="text-center mb-10">
-          <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Check className="h-5 w-5 text-primary" />
-          </div>
-          <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium mb-4">Today's Item</p>
-          <h1 className="text-[28px] font-serif text-foreground italic leading-[1.2] mb-4">"{prompt.prompt_text}"</h1>
-          <p className="text-[15px] text-muted-foreground">You contributed to today's world.</p>
-          {todayCount > 1 && (
-            <p className="text-meta mt-3">{todayCount} people are seeing the world this way today.</p>
-          )}
-          {streakCount > 1 && (
-            <p className="text-meta mt-1">{streakCount} days of continuity</p>
-          )}
-          {city && (
-            <div className="flex items-center justify-center gap-1.5 text-meta mt-3">
-              <MapPin className="h-3.5 w-3.5" />
-              <span>{city}</span>
-            </div>
-          )}
+      <div className="min-h-screen bg-background animate-scale-in flex flex-col">
+        {/* Persistent prompt label */}
+        <div className="px-4 pt-14 pb-2">
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
+          <p className="text-[14px] font-serif italic text-foreground mt-1">"{prompt.prompt_text}"</p>
         </div>
+
+        {/* Image — edge-to-edge, grounded */}
         {preview && (
-          <div className="w-full max-w-sm overflow-hidden rounded-2xl shadow-elevated">
-            <img src={preview} alt="Your capture" className="w-full aspect-square object-cover" />
+          <div className="mx-2 relative">
+            <img
+              src={preview}
+              alt="Your capture"
+              className="w-full rounded-lg object-cover"
+              style={{ height: "63vh", boxShadow: "inset 0 8px 12px -4px rgba(0,0,0,0.02), inset 0 -8px 12px -4px rgba(0,0,0,0.02)" }}
+            />
           </div>
         )}
+
+        {/* Metadata below */}
+        <div className="px-4 pt-3 pb-6">
+          <p className="text-[15px] font-bold text-foreground">You contributed to today's world.</p>
+          <div className="flex items-center gap-1.5 mt-1">
+            {city && <span className="text-[12px] text-muted-foreground">{city}</span>}
+            {city && todayCount > 1 && <span className="text-[12px] text-muted-foreground">·</span>}
+            {todayCount > 1 && (
+              <span className="text-[12px] text-muted-foreground">{todayCount} people seeing this today</span>
+            )}
+          </div>
+          {streakCount > 1 && (
+            <p className="text-[12px] text-muted-foreground mt-0.5">{streakCount} days</p>
+          )}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-6 animate-fade-in">
-      <div className="w-full max-w-sm">
-        <div className="mb-10 text-center">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium mb-4">Today's Item</p>
-          <h1 className="text-[28px] font-serif text-foreground italic leading-[1.2]">"{prompt.prompt_text}"</h1>
-        </div>
+    <div className="min-h-screen bg-background animate-fade-in flex flex-col">
+      {/* Persistent prompt label */}
+      <div className="px-4 pt-14 pb-3">
+        <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
+        <p className="text-[14px] font-serif italic text-foreground mt-1">"{prompt.prompt_text}"</p>
+      </div>
 
+      <div className="flex-1 flex flex-col px-2">
         {preview ? (
-          <div className="space-y-4">
-            <div className="overflow-hidden rounded-2xl shadow-elevated">
-              <img src={preview} alt="Preview" className="w-full aspect-square object-cover" />
+          <>
+            <div className="relative">
+              <img
+                src={preview}
+                alt="Preview"
+                className="w-full rounded-lg object-cover"
+                style={{ height: "63vh", boxShadow: "inset 0 8px 12px -4px rgba(0,0,0,0.02), inset 0 -8px 12px -4px rgba(0,0,0,0.02)" }}
+              />
             </div>
-            <div className="flex gap-3">
-              <Button variant="outline" className="flex-1 h-12 rounded-xl tap-scale" onClick={handleRetake}>
+            <div className="flex gap-3 mt-3 px-2">
+              <Button variant="outline" className="flex-1 h-12 rounded-lg tap-scale" onClick={handleRetake}>
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Retake
               </Button>
-              <Button className="flex-1 h-12 rounded-xl tap-scale" onClick={handleConfirm} disabled={confirming}>
+              <Button className="flex-1 h-12 rounded-lg tap-scale" onClick={handleConfirm} disabled={confirming}>
                 <Check className="mr-2 h-4 w-4" />
                 {confirming ? "Confirming..." : "Confirm"}
               </Button>
             </div>
-          </div>
+          </>
         ) : (
           <button
             onClick={() => fileRef.current?.click()}
-            className="group mx-auto flex h-72 w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-card shadow-soft transition-all duration-200 hover:border-primary/30 hover:shadow-card tap-scale"
+            className="group flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-card shadow-soft transition-all duration-200 hover:border-primary/30 hover:shadow-card tap-scale"
+            style={{ height: "63vh" }}
           >
             <Camera className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors mb-4" />
             <span className="text-[15px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
@@ -215,9 +229,9 @@ export default function Capture() {
             </span>
           </button>
         )}
-
-        <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
       </div>
+
+      <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
     </div>
   );
 }

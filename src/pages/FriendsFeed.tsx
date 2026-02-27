@@ -163,8 +163,8 @@ export default function FriendsFeed() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-        <div className="h-6 w-6 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+      <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
+        <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -201,13 +201,13 @@ export default function FriendsFeed() {
   const dateLabel = post && isToday(new Date(post.confirmed_at)) ? "Today" : post ? format(new Date(post.confirmed_at), "MMM d") : "";
 
   return (
-    <div className="fixed inset-0 bg-black z-50 overflow-hidden">
-      {/* Editorial header — clean, minimal */}
-      <div className="absolute top-0 left-0 right-0 z-30 px-5 pt-12 pb-4 flex items-center justify-between bg-gradient-to-b from-black/60 via-black/20 to-transparent pointer-events-none">
-        <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-white/80 hover:text-white transition-ritual tap-scale pointer-events-auto">
+    <div className="fixed inset-0 bg-background z-50 overflow-hidden">
+      {/* Header */}
+      <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-12 pb-1 flex items-center justify-between pointer-events-none">
+        <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-muted-foreground hover:text-foreground transition-ritual tap-scale pointer-events-auto">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <span className="text-[11px] font-medium tracking-wider uppercase text-white/35 tabular-nums">
+        <span className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground tabular-nums">
           {currentIndex + 1} of {posts.length}
         </span>
         <div className="w-9" />
@@ -220,60 +220,64 @@ export default function FriendsFeed() {
         onIndexChange={handleIndexChange}
         onEndReached={() => {}}
         onHorizontalSwipe={setSwipeState}
-        renderItem={(item, _idx, isActive) => (
-          <HorizontalReaction
-            currentReaction={reactions[item.id] || null}
-            disabled={item.user_id === user?.id}
-            onReact={(dir) => handleReact(item.id, dir)}
-            swipeState={isActive ? swipeState : undefined}
-          >
-            <div className="h-full w-full flex items-center justify-center bg-black">
-              <img
-                src={item.image_url}
-                alt=""
-                className="h-full w-full object-cover"
-                style={{ opacity: isActive ? 1 : 0.3, transition: "opacity 300ms ease" }}
-              />
-            </div>
-          </HorizontalReaction>
-        )}
-        renderOverlay={(item) => (
-          <div className="absolute bottom-0 left-0 right-0 z-20 px-5 pb-8 pt-24 bg-gradient-to-t from-black/70 via-black/25 to-transparent pointer-events-none">
-            <div className="flex items-end justify-between">
-              <div className="pointer-events-auto">
-                <button onClick={() => navigate(`/user/${item.user_id}`)} className="flex items-center gap-2.5 tap-scale transition-ritual mb-1.5">
-                  {item.avatar_url ? (
-                    <img src={item.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover ring-1 ring-white/15" />
-                  ) : (
-                    <div className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center text-xs font-semibold text-white/80">
-                      {(item.display_name || item.username).charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <span className="text-[14px] font-bold text-white/95 tracking-[-0.01em]">
-                    {item.display_name || item.username}
-                  </span>
-                </button>
-                <div className="flex items-center gap-2 pl-[42px] mb-1">
-                  <span className="text-[11px] text-white/40">{dateLabel}</span>
-                  {item.city && <span className="text-[11px] text-white/30">· {item.city}</span>}
+        renderItem={(item, _idx, isActive) => {
+          const itemDateLabel = isToday(new Date(item.confirmed_at)) ? "Today" : format(new Date(item.confirmed_at), "MMM d");
+          return (
+            <HorizontalReaction
+              currentReaction={reactions[item.id] || null}
+              disabled={item.user_id === user?.id}
+              onReact={(dir) => handleReact(item.id, dir)}
+              swipeState={isActive ? swipeState : undefined}
+            >
+              <div className="h-full w-full flex flex-col bg-background">
+                {/* Prompt label */}
+                <div className="px-4 pt-16 pb-2">
+                  <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
                 </div>
-                <div className="pl-[42px]">
-                  <ReactionDisplay postId={item.id} isOwner={false} refreshKey={reactionRefresh} compact />
+
+                {/* Image — edge-to-edge, grounded */}
+                <div className="mx-2 relative flex-shrink-0">
+                  <img
+                    src={item.image_url}
+                    alt=""
+                    className="w-full rounded-lg object-cover"
+                    style={{
+                      height: "63vh",
+                      opacity: isActive ? 1 : 0.3,
+                      transition: "opacity 300ms ease",
+                      boxShadow: "inset 0 8px 12px -4px rgba(0,0,0,0.02), inset 0 -8px 12px -4px rgba(0,0,0,0.02)",
+                    }}
+                  />
+                </div>
+
+                {/* Metadata below photo */}
+                <div className="px-4 pt-3 flex items-center justify-between">
+                  <div>
+                    <button onClick={() => navigate(`/user/${item.user_id}`)} className="tap-scale transition-ritual">
+                      <span className="text-[15px] font-bold text-foreground">
+                        {item.display_name || item.username}
+                      </span>
+                    </button>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[12px] text-muted-foreground">{itemDateLabel}</span>
+                      {item.city && <span className="text-[12px] text-muted-foreground">· {item.city}</span>}
+                    </div>
+                    <ReactionDisplay postId={item.id} isOwner={false} refreshKey={reactionRefresh} compact />
+                  </div>
+                  <button
+                    onClick={() => setNotePostId(item.id)}
+                    className="p-2.5 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-ritual tap-scale"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
-
-              <button
-                onClick={() => setNotePostId(item.id)}
-                className="p-2.5 rounded-full bg-white/10 backdrop-blur-md text-white/60 hover:text-white hover:bg-white/20 transition-ritual tap-scale pointer-events-auto"
-              >
-                <MessageSquare className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        )}
+            </HorizontalReaction>
+          );
+        }}
       />
 
-      {/* Scroll indicator — editorial thin line */}
+      {/* Scroll indicator */}
       <div className="absolute right-2.5 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-[3px] pointer-events-none">
         {Array.from({ length: Math.min(7, posts.length) }).map((_, i) => {
           const startIdx = Math.max(0, Math.min(currentIndex - 3, posts.length - 7));
@@ -283,7 +287,7 @@ export default function FriendsFeed() {
             <div
               key={idx}
               className={`w-[2px] rounded-full transition-all duration-300 ${
-                idx === currentIndex ? "h-5 bg-white/60" : "h-1.5 bg-white/15"
+                idx === currentIndex ? "h-5 bg-foreground/40" : "h-1.5 bg-foreground/10"
               }`}
             />
           );

@@ -203,7 +203,7 @@ export default function FollowingFeedTab() {
 
   return (
     <div
-      className="fixed left-0 right-0 bg-black z-30"
+      className="fixed left-0 right-0 bg-background z-30"
       style={{ top: `${headerHeight}px`, bottom: `${bottomNavHeight}px` }}
     >
       <PhotoFeedPager
@@ -213,65 +213,67 @@ export default function FollowingFeedTab() {
         onEndReached={() => {}}
         onHorizontalSwipe={setSwipeState}
         useContainerHeight
-        renderItem={(item, _idx, isActive) => (
-          <HorizontalReaction
-            currentReaction={reactions[item.id] || null}
-            disabled={item.user_id === user?.id}
-            onReact={(dir) => handleReact(item.id, dir)}
-            swipeState={isActive ? swipeState : undefined}
-          >
-            <div className="h-full w-full flex items-center justify-center bg-black">
-              <img
-                src={item.image_url}
-                alt=""
-                className="h-full w-full object-cover"
-                style={{ opacity: isActive ? 1 : 0.3, transition: "opacity 300ms ease" }}
-              />
-            </div>
-          </HorizontalReaction>
-        )}
-        renderOverlay={(item) => {
+        renderItem={(item, _idx, isActive) => {
           const dateLabel = isToday(new Date(item.confirmed_at))
             ? "Today"
             : format(new Date(item.confirmed_at), "MMM d");
 
           return (
-            <div className="absolute bottom-0 left-0 right-0 z-20 px-5 pb-5 pt-24 bg-gradient-to-t from-black/70 via-black/25 to-transparent pointer-events-none">
-              <div className="flex items-end justify-between">
-                <div className="pointer-events-auto">
-                  <button onClick={() => navigate(`/user/${item.user_id}`)} className="flex items-center gap-2.5 tap-scale transition-ritual mb-1.5">
-                    {item.avatar_url ? (
-                      <img src={item.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover ring-1 ring-white/15" />
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center text-xs font-semibold text-white/80">
-                        {(item.display_name || item.username).charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <span className="text-[14px] font-bold text-white/95 tracking-[-0.01em]">
-                      {item.display_name || item.username}
-                    </span>
-                  </button>
-                  <div className="flex items-center gap-2 pl-[42px] mb-1">
-                    <span className="text-[11px] text-white/40">{dateLabel}</span>
-                    {item.city && <span className="text-[11px] text-white/30">· {item.city}</span>}
-                  </div>
-                  <div className="pl-[42px]">
+            <HorizontalReaction
+              currentReaction={reactions[item.id] || null}
+              disabled={item.user_id === user?.id}
+              onReact={(dir) => handleReact(item.id, dir)}
+              swipeState={isActive ? swipeState : undefined}
+            >
+              <div className="h-full w-full flex flex-col bg-background">
+                {/* Prompt label */}
+                <div className="px-4 pt-2 pb-2">
+                  <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
+                </div>
+
+                {/* Image — edge-to-edge, grounded */}
+                <div className="mx-2 relative flex-shrink-0">
+                  <img
+                    src={item.image_url}
+                    alt=""
+                    className="w-full rounded-lg object-cover"
+                    style={{
+                      height: "60vh",
+                      opacity: isActive ? 1 : 0.3,
+                      transition: "opacity 300ms ease",
+                      boxShadow: "inset 0 8px 12px -4px rgba(0,0,0,0.02), inset 0 -8px 12px -4px rgba(0,0,0,0.02)",
+                    }}
+                  />
+                </div>
+
+                {/* Metadata below photo */}
+                <div className="px-4 pt-3 flex items-center justify-between">
+                  <div>
+                    <button onClick={() => navigate(`/user/${item.user_id}`)} className="tap-scale transition-ritual">
+                      <span className="text-[15px] font-bold text-foreground">
+                        {item.display_name || item.username}
+                      </span>
+                    </button>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[12px] text-muted-foreground">{dateLabel}</span>
+                      {item.city && <span className="text-[12px] text-muted-foreground">· {item.city}</span>}
+                    </div>
                     <ReactionDisplay postId={item.id} isOwner={false} refreshKey={reactionRefresh} compact />
                   </div>
+                  <button
+                    onClick={() => setNotePostId(item.id)}
+                    className="p-2.5 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-ritual tap-scale"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setNotePostId(item.id)}
-                  className="p-2.5 rounded-full bg-white/10 backdrop-blur-md text-white/60 hover:text-white hover:bg-white/20 transition-ritual tap-scale pointer-events-auto"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                </button>
               </div>
-            </div>
+            </HorizontalReaction>
           );
         }}
       />
 
-      {/* Editorial progress indicator */}
+      {/* Progress indicator */}
       <div className="absolute right-2.5 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-[3px] pointer-events-none">
         {Array.from({ length: Math.min(7, posts.length) }).map((_, i) => {
           const startIdx = Math.max(0, Math.min(currentIndex - 3, posts.length - 7));
@@ -281,7 +283,7 @@ export default function FollowingFeedTab() {
             <div
               key={idx}
               className={`w-[2px] rounded-full transition-all duration-300 ${
-                idx === currentIndex ? "h-5 bg-white/60" : "h-[5px] bg-white/15"
+                idx === currentIndex ? "h-5 bg-foreground/40" : "h-[5px] bg-foreground/10"
               }`}
             />
           );
@@ -289,8 +291,8 @@ export default function FollowingFeedTab() {
       </div>
 
       {/* Counter */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-        <span className="text-[10px] font-medium tracking-wider uppercase text-white/30 tabular-nums">
+      <div className="absolute top-1 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+        <span className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground tabular-nums">
           {currentIndex + 1} of {posts.length}
         </span>
       </div>
