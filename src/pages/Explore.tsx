@@ -90,12 +90,16 @@ export default function Explore() {
     setLoading(true);
     setPosts([]);
     setHasMore(true);
-    const { data: posted } = await supabase.rpc("has_posted_today", { p_user_id: user.id });
-    setHasPosted(!!posted);
-    if (!posted) { setLoading(false); return; }
+
+    // Always fetch today's prompt
     const today = new Date().toISOString().split("T")[0];
     const { data: dailyItem } = await supabase.from("daily_items").select("prompt_text").eq("active_date", today).single();
     setTodayPrompt(dailyItem?.prompt_text || null);
+
+    // Check hasPosted for Following tab gating only
+    const { data: posted } = await supabase.rpc("has_posted_today", { p_user_id: user.id });
+    setHasPosted(!!posted);
+
     if (tab === "world") {
       const { data: rawPosts } = await supabase.from("posts").select("id, image_url, city, confirmed_at, user_id")
         .not("confirmed_at", "is", null).is("deleted_at", null).order("confirmed_at", { ascending: false }).limit(PAGE_SIZE);
@@ -167,7 +171,7 @@ export default function Explore() {
     }
   };
 
-  if (!hasPosted && !loading) {
+  if (!hasPosted && !loading && tab === "following") {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-6 animate-fade-in">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary mb-5">
