@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { ArrowLeft, LogOut, Moon, Sparkles } from "lucide-react";
+import { ArrowLeft, LogOut, Moon, Sparkles, Bell, Heart, UserPlus, MessageSquare, Clock } from "lucide-react";
 import AvatarUpload from "@/components/AvatarUpload";
+import { useNotifications } from "@/hooks/use-notifications";
 
 export default function SettingsPage() {
   const { profile, user, signOut, refreshProfile } = useAuth();
@@ -18,6 +19,18 @@ export default function SettingsPage() {
   const [bio, setBio] = useState(profile?.bio || "");
   const [isPrivate, setIsPrivate] = useState(profile?.is_private || false);
   const [saving, setSaving] = useState(false);
+
+  const {
+    supported: pushSupported,
+    permission: pushPermission,
+    subscribed: pushSubscribed,
+    loading: pushLoading,
+    prefs: notifPrefs,
+    prefsLoaded,
+    subscribe: pushSubscribe,
+    unsubscribe: pushUnsubscribe,
+    updatePreferences,
+  } = useNotifications();
 
   const handleSave = async () => {
     if (!user) return;
@@ -35,6 +48,38 @@ export default function SettingsPage() {
     }
     setSaving(false);
   };
+
+  const handleTogglePush = async () => {
+    if (pushSubscribed) {
+      await pushUnsubscribe();
+      toast("Push notifications disabled");
+    } else {
+      const ok = await pushSubscribe();
+      if (ok) {
+        toast.success("Push notifications enabled!");
+      } else if (pushPermission === "denied") {
+        toast.error("Notifications blocked — enable them in your browser settings");
+      } else {
+        toast.error("Failed to enable notifications");
+      }
+    }
+  };
+
+  // Convert local hour to UTC hour for storage
+  const localHourToUtc = (localHour: number): number => {
+    const now = new Date();
+    now.setHours(localHour, 0, 0, 0);
+    return now.getUTCHours();
+  };
+
+  // Convert UTC hour to local hour for display
+  const utcHourToLocal = (utcHour: number): number => {
+    const now = new Date();
+    const utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), utcHour));
+    return utcDate.getHours();
+  };
+
+  const localReminderHour = utcHourToLocal(notifPrefs.reminder_hour);
 
   const handleLogout = async () => {
     await signOut();
@@ -88,6 +133,100 @@ export default function SettingsPage() {
           <Button onClick={handleSave} className="w-full" disabled={saving}>
             {saving ? "Saving..." : "Save changes"}
           </Button>
+
+          {/* Notifications Section */}
+          {pushSupported && (
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-2 pb-1">
+                <Bell className="h-4 w-4 text-foreground" />
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Notifications</p>
+              </div>
+
+              <div className="flex items-center justify-between py-3 border-t border-border">
+                <div>
+                  <p className="text-sm text-foreground">Push notifications</p>
+                  <p className="text-xs text-muted-foreground">
+                    {pushPermission === "denied"
+                      ? "Blocked in browser settings"
+                      : "Get notified about activity and reminders"}
+                  </p>
+                </div>
+                <Switch
+                  checked={pushSubscribed}
+                  onCheckedChange={handleTogglePush}
+                  disabled={pushLoading || pushPermission === "denied"}
+                />
+              </div>
+
+              {pushSubscribed && prefsLoaded && (
+                <div className="space-y-0 pl-2">
+                  <div className="flex items-center justify-between py-2.5">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                      <p className="text-sm text-foreground">Daily item reminder</p>
+                    </div>
+                    <Switch
+                      checked={notifPrefs.daily_reminder}
+                      onCheckedChange={(v) => updatePreferences({ daily_reminder: v })}
+                    />
+                  </div>
+
+                  {notifPrefs.daily_reminder && (
+                    <div className="flex items-center justify-between py-2.5 pl-6">
+                      <p className="text-xs text-muted-foreground">Remind me at</p>
+                      <select
+                        value={localReminderHour}
+                        onChange={(e) => {
+                          const utcHour = localHourToUtc(parseInt(e.target.value));
+                          updatePreferences({ reminder_hour: utcHour });
+                        }}
+                        className="text-sm bg-card border border-border rounded-lg px-2 py-1 text-foreground"
+                      >
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {i === 0 ? "12:00 AM" : i < 12 ? `${i}:00 AM` : i === 12 ? "12:00 PM" : `${i - 12}:00 PM`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between py-2.5">
+                    <div className="flex items-center gap-2">
+                      <Heart className="h-3.5 w-3.5 text-muted-foreground" />
+                      <p className="text-sm text-foreground">Appreciations</p>
+                    </div>
+                    <Switch
+                      checked={notifPrefs.on_appreciation}
+                      onCheckedChange={(v) => updatePreferences({ on_appreciation: v })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between py-2.5">
+                    <div className="flex items-center gap-2">
+                      <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />
+                      <p className="text-sm text-foreground">New followers</p>
+                    </div>
+                    <Switch
+                      checked={notifPrefs.on_follow}
+                      onCheckedChange={(v) => updatePreferences({ on_follow: v })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between py-2.5">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+                      <p className="text-sm text-foreground">Private notes</p>
+                    </div>
+                    <Switch
+                      checked={notifPrefs.on_note}
+                      onCheckedChange={(v) => updatePreferences({ on_note: v })}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <button
             onClick={() => navigate("/settings/reactions")}

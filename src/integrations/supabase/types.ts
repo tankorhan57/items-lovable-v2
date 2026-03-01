@@ -56,6 +56,24 @@ export type Database = {
           },
         ]
       }
+      app_config: {
+        Row: {
+          created_at: string
+          key: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          key: string
+          value: Json
+        }
+        Update: {
+          created_at?: string
+          key?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       appreciations: {
         Row: {
           created_at: string
@@ -159,6 +177,44 @@ export type Database = {
             foreignKeyName: "follows_following_id_fkey"
             columns: ["following_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          daily_reminder: boolean
+          on_appreciation: boolean
+          on_follow: boolean
+          on_note: boolean
+          reminder_hour: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          daily_reminder?: boolean
+          on_appreciation?: boolean
+          on_follow?: boolean
+          on_note?: boolean
+          reminder_hour?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          daily_reminder?: boolean
+          on_appreciation?: boolean
+          on_follow?: boolean
+          on_note?: boolean
+          reminder_hour?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -331,6 +387,41 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       streaks: {
         Row: {

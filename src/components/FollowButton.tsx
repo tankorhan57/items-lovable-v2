@@ -3,6 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { triggerPushNotification } from "@/lib/notify";
 
 interface FollowButtonProps {
   targetUserId: string;
@@ -53,13 +54,20 @@ export default function FollowButton({ targetUserId, isPrivate, size = "sm", onS
 
       if (error) throw error;
 
-      // Create activity event
+      // Create activity event + push notification
       await supabase.from("activity").insert({
         actor_id: user.id,
         user_id: targetUserId,
         type: isPrivate ? "follow_request" : "follow",
         reference_id: null,
       });
+      triggerPushNotification(
+        targetUserId,
+        isPrivate ? "follow_request" : "follow",
+        isPrivate ? "Follow Request" : "New Follower",
+        isPrivate ? "Someone wants to follow you" : "Someone started following you",
+        "/activity"
+      );
 
       setStatus(isPrivate ? "requested" : "following");
       onStatusChange?.();
