@@ -3,6 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { triggerPushNotification } from "@/lib/notify";
 import {
   Drawer,
   DrawerContent,
@@ -36,7 +37,7 @@ export default function NoteComposer({ postId, postOwnerId, open, onClose, onSen
 
       if (error) throw error;
 
-      // Activity event
+      // Activity event + push notification
       if (postOwnerId !== user.id) {
         await supabase.from("activity").insert({
           actor_id: user.id,
@@ -44,6 +45,13 @@ export default function NoteComposer({ postId, postOwnerId, open, onClose, onSen
           type: "note",
           reference_id: postId,
         });
+        triggerPushNotification(
+          postOwnerId,
+          "note",
+          "Private Note",
+          "Someone sent you a private note 💬",
+          `/notes/${postId}`
+        );
       }
 
       setContent("");

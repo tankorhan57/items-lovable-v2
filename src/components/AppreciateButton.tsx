@@ -3,6 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { triggerPushNotification } from "@/lib/notify";
 
 interface AppreciateButtonProps {
   postId: string;
@@ -70,7 +71,7 @@ export default function AppreciateButton({ postId, postOwnerId, onCountChange, o
         post_id: postId,
       });
 
-      // Activity event (only if not own post)
+      // Activity event + push notification (only if not own post)
       if (postOwnerId !== user.id) {
         await supabase.from("activity").insert({
           actor_id: user.id,
@@ -78,6 +79,13 @@ export default function AppreciateButton({ postId, postOwnerId, onCountChange, o
           type: "appreciation",
           reference_id: postId,
         });
+        triggerPushNotification(
+          postOwnerId,
+          "appreciation",
+          "New Appreciation",
+          "Someone appreciated your photo ❤️",
+          `/post/${postId}`
+        );
       }
     }
   };
