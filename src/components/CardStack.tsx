@@ -22,6 +22,7 @@ const MAX_DRAG = 260;
 const ROTATION_FACTOR = 0.12;
 const FLY_DURATION = 340;
 const SPRING_DURATION = 400;
+const HINT_SHOWN_KEY = "cardstack_hint_shown";
 
 /**
  * Tinder-style card stack with swipe-to-react.
@@ -41,6 +42,7 @@ export default function CardStack<T extends CardItem>({
   const [dismissedCount, setDismissedCount] = useState(0);
   const [flyingOff, setFlyingOff] = useState<{ dir: "left" | "right" } | null>(null);
   const [commitAnim, setCommitAnim] = useState<{ icon: string; label: string } | null>(null);
+  const [showHint, setShowHint] = useState(false);
 
   const cardRef = useRef<HTMLDivElement>(null);
   const overlayLeftRef = useRef<HTMLDivElement>(null);
@@ -58,6 +60,18 @@ export default function CardStack<T extends CardItem>({
   });
 
   const remaining = items.slice(dismissedCount);
+
+  // Show swipe hint on first ever load
+  useEffect(() => {
+    if (remaining.length > 0 && !sessionStorage.getItem(HINT_SHOWN_KEY)) {
+      const timer = setTimeout(() => setShowHint(true), 600);
+      const hideTimer = setTimeout(() => {
+        setShowHint(false);
+        sessionStorage.setItem(HINT_SHOWN_KEY, "1");
+      }, 3200);
+      return () => { clearTimeout(timer); clearTimeout(hideTimer); };
+    }
+  }, []);
 
   // Notify parent when empty
   useEffect(() => {
@@ -139,6 +153,7 @@ export default function CardStack<T extends CardItem>({
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     const g = gesture.current;
     if (g.isLocked) return;
+    setShowHint(false);
     const t = e.touches[0];
     g.startX = t.clientX;
     g.startY = t.clientY;
@@ -316,17 +331,44 @@ export default function CardStack<T extends CardItem>({
           </div>
         )}
 
+        {/* Swipe hint overlay */}
+        {showHint && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
+            <div className="bg-black/50 backdrop-blur-sm rounded-2xl px-6 py-4 flex items-center gap-6 animate-fade-in">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-2xl">{leftReaction.icon}</span>
+                <span className="text-[10px] text-white/70">← swipe</span>
+              </div>
+              <div className="text-xs text-white/60 font-medium">Swipe to react</div>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-2xl">{rightReaction.icon}</span>
+                <span className="text-[10px] text-white/70">swipe →</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Card content */}
         <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ aspectRatio: "3/4" }}>
           {renderCard(remaining[0], dismissedCount)}
         </div>
       </div>
 
-      {/* Counter */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-        <span className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground tabular-nums">
-          {dismissedCount + 1} of {items.length}
-        </span>
+      {/* Reaction legend + counter */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex flex-col items-center gap-1.5">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <span className="text-sm">← {leftReaction.icon}</span>
+            <span className="text-[10px]">{leftReaction.label}</span>
+          </div>
+          <span className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground tabular-nums">
+            {dismissedCount + 1} / {items.length}
+          </span>
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <span className="text-[10px]">{rightReaction.label}</span>
+            <span className="text-sm">{rightReaction.icon} →</span>
+          </div>
+        </div>
       </div>
     </div>
   );
