@@ -14,6 +14,17 @@ export default function AppShell() {
   useEffect(() => {
     if (!user || !profile) return;
     checkUnread();
+
+    const channel = supabase
+      .channel("activity-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "activity", filter: `user_id=eq.${user.id}` },
+        () => setUnreadCount((c) => c + 1)
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user, profile, location.pathname]);
 
   const checkUnread = async () => {
