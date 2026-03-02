@@ -9,7 +9,7 @@ export default function AppShell() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const [hasUnread, setHasUnread] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (!user || !profile) return;
@@ -30,13 +30,13 @@ export default function AppShell() {
     }
 
     const { count } = await query;
-    setHasUnread((count || 0) > 0);
+    setUnreadCount(count || 0);
   };
 
   const navItems = [
     { path: "/", icon: Camera, label: "Capture" },
     { path: "/explore", icon: Compass, label: "Explore" },
-    { path: "/activity", icon: Bell, label: "Activity", badge: hasUnread },
+    { path: "/activity", icon: Bell, label: "Activity", unreadCount },
     { path: "/profile", icon: User, label: "Profile" },
   ];
 
@@ -49,7 +49,7 @@ export default function AppShell() {
       {/* Bottom nav — high-contrast, structured */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-md items-center justify-around py-2 px-2">
-          {navItems.map(({ path, icon: Icon, label, badge }) => {
+          {navItems.map(({ path, icon: Icon, label, unreadCount: count }) => {
             const active = location.pathname === path;
             return (
               <button
@@ -61,8 +61,10 @@ export default function AppShell() {
                 )}
               >
                 <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.4 : 1.6} />
-                {badge && (
-                  <span className="absolute top-1 right-3.5 h-2 w-2 rounded-full bg-primary ring-2 ring-card" />
+                {count != null && count > 0 && (
+                  <span className="absolute top-0.5 right-2.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground ring-2 ring-card">
+                    {count > 99 ? "99+" : count}
+                  </span>
                 )}
                 <span className={cn("text-[11px]", active ? "font-semibold" : "font-medium")}>{label}</span>
               </button>
