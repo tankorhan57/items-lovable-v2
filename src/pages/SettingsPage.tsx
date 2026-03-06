@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { ArrowLeft, LogOut, Moon, Sparkles, Bell, Heart, UserPlus, MessageSquare, Clock } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, LogOut, Moon, Sparkles, Bell, Heart, UserPlus, MessageSquare, Clock, Trash2, FileText } from "lucide-react";
 import AvatarUpload from "@/components/AvatarUpload";
 import { useNotifications } from "@/hooks/use-notifications";
 
@@ -236,7 +241,14 @@ export default function SettingsPage() {
             Customize reactions
           </button>
 
-          <div className="pt-6 border-t border-border">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground py-3 border-t border-border">
+            <FileText className="h-4 w-4" />
+            <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+            <span>·</span>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+          </div>
+
+          <div className="pt-4 border-t border-border flex items-center justify-between">
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 text-sm text-destructive hover:text-destructive/80 transition-colors"
@@ -244,6 +256,42 @@ export default function SettingsPage() {
               <LogOut className="h-4 w-4" />
               Sign out
             </button>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="flex items-center gap-2 text-sm text-destructive/60 hover:text-destructive transition-colors">
+                  <Trash2 className="h-4 w-4" />
+                  Delete account
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete all your data — posts, followers, reactions, and notes. This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={async () => {
+                      toast("Deleting account...");
+                      const { error } = await supabase.functions.invoke("delete-account");
+                      if (error) {
+                        toast.error("Failed to delete account. Please try again.");
+                        return;
+                      }
+                      await supabase.auth.signOut();
+                      navigate("/auth");
+                      toast.success("Account deleted.");
+                    }}
+                  >
+                    Delete permanently
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>
