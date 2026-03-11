@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { triggerPushNotification } from "@/lib/notify";
+import { mapErrorToUserMessage } from "@/lib/error-utils";
+import { toast } from "sonner";
 
 interface FollowButtonProps {
   targetUserId: string;
