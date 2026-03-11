@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import FollowButton from "@/components/FollowButton";
 import { Badge } from "@/components/ui/badge";
 import RitualAvatar from "@/components/RitualAvatar";
+import ReportBlockMenu from "@/components/ReportBlockMenu";
 
 interface UserProfileData {
   id: string;
