@@ -12,6 +12,7 @@ import { MessageSquare } from "lucide-react";
 import RitualAvatar from "@/components/RitualAvatar";
 import SwipeReaction from "@/components/SwipeReaction";
 import ReactionDisplay from "@/components/ReactionDisplay";
+import ReportBlockMenu from "@/components/ReportBlockMenu";
 import type { ReactionDirection } from "@/components/SwipeReaction";
 
 interface PostData {
