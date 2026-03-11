@@ -33,7 +33,7 @@ export default function ReportBlockMenu({ targetUserId, targetPostId, onBlocked 
       reason: "inappropriate",
     });
     if (error) {
-      toast.error("Failed to submit report");
+      toast.error(mapErrorToUserMessage(error));
     } else {
       toast.success("Report submitted. Thank you.");
     }
