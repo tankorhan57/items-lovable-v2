@@ -6,6 +6,7 @@ import { ArrowLeft, Send } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { mapErrorToUserMessage } from "@/lib/error-utils";
 
 interface Note {
   id: string;
