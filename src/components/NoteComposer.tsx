@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { triggerPushNotification } from "@/lib/notify";
+import { mapErrorToUserMessage } from "@/lib/error-utils";
 import {
   Drawer,
   DrawerContent,
@@ -58,8 +59,8 @@ export default function NoteComposer({ postId, postOwnerId, open, onClose, onSen
       toast.success("Note sent");
       onSent?.();
       onClose();
-    } catch {
-      toast.error("Failed to send note");
+    } catch (err) {
+      toast.error(mapErrorToUserMessage(err));
     } finally {
       setSending(false);
     }

@@ -6,6 +6,7 @@ import { ArrowLeft, Send } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { mapErrorToUserMessage } from "@/lib/error-utils";
 
 interface Note {
   id: string;
@@ -130,8 +131,8 @@ function NoteThreadComposer({ postId, postOwnerId, onSent }: { postId: string; p
 
       setContent("");
       onSent();
-    } catch {
-      toast.error("Failed to send");
+    } catch (err) {
+      toast.error(mapErrorToUserMessage(err));
     } finally {
       setSending(false);
     }

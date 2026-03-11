@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
+import { mapErrorToUserMessage } from "@/lib/error-utils";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -32,7 +33,7 @@ export default function ReportBlockMenu({ targetUserId, targetPostId, onBlocked 
       reason: "inappropriate",
     });
     if (error) {
-      toast.error("Failed to submit report");
+      toast.error(mapErrorToUserMessage(error));
     } else {
       toast.success("Report submitted. Thank you.");
     }
@@ -47,7 +48,7 @@ export default function ReportBlockMenu({ targetUserId, targetPostId, onBlocked 
       if (error.code === "23505") {
         toast("User already blocked");
       } else {
-        toast.error("Failed to block user");
+        toast.error(mapErrorToUserMessage(error));
       }
     } else {
       toast.success("User blocked");
