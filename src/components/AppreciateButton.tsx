@@ -50,30 +50,41 @@ export default function AppreciateButton({ postId, postOwnerId, onCountChange, o
     if (!user) return;
 
     if (appreciated) {
-      // Optimistic
       setAppreciated(false);
       setCount(c => c - 1);
       onCountChange?.(count - 1);
 
-      await supabase
+      const { error } = await supabase
         .from("appreciations")
         .delete()
         .eq("post_id", postId)
         .eq("user_id", user.id);
+      if (error) {
+        setAppreciated(true);
+        setCount(c => c + 1);
+        onCountChange?.(count);
+        toast.error(mapErrorToUserMessage(error));
+        return;
+      }
     } else {
-      // Optimistic
       setAppreciated(true);
       setCount(c => c + 1);
       onCountChange?.(count + 1);
       setAnimating(true);
       setTimeout(() => setAnimating(false), 300);
 
-      await supabase.from("appreciations").insert({
+      const { error } = await supabase.from("appreciations").insert({
         user_id: user.id,
         post_id: postId,
       });
+      if (error) {
+        setAppreciated(false);
+        setCount(c => c - 1);
+        onCountChange?.(count);
+        toast.error(mapErrorToUserMessage(error));
+        return;
+      }
 
-      // Activity event + push notification (only if not own post)
       if (postOwnerId !== user.id) {
         await supabase.from("activity").insert({
           actor_id: user.id,

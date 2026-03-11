@@ -73,8 +73,8 @@ export default function FollowButton({ targetUserId, isPrivate, size = "sm", onS
 
       setStatus(isPrivate ? "requested" : "following");
       onStatusChange?.();
-    } catch {
-      // Might be duplicate
+    } catch (err) {
+      toast.error(mapErrorToUserMessage(err));
     } finally {
       setLoading(false);
     }

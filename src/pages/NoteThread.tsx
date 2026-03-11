@@ -131,8 +131,8 @@ function NoteThreadComposer({ postId, postOwnerId, onSent }: { postId: string; p
 
       setContent("");
       onSent();
-    } catch {
-      toast.error("Failed to send");
+    } catch (err) {
+      toast.error(mapErrorToUserMessage(err));
     } finally {
       setSending(false);
     }

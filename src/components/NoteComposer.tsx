@@ -59,8 +59,8 @@ export default function NoteComposer({ postId, postOwnerId, open, onClose, onSen
       toast.success("Note sent");
       onSent?.();
       onClose();
-    } catch {
-      toast.error("Failed to send note");
+    } catch (err) {
+      toast.error(mapErrorToUserMessage(err));
     } finally {
       setSending(false);
     }

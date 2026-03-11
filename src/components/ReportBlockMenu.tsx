@@ -48,7 +48,7 @@ export default function ReportBlockMenu({ targetUserId, targetPostId, onBlocked 
       if (error.code === "23505") {
         toast("User already blocked");
       } else {
-        toast.error("Failed to block user");
+        toast.error(mapErrorToUserMessage(error));
       }
     } else {
       toast.success("User blocked");
