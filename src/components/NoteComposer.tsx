@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { triggerPushNotification } from "@/lib/notify";
+import { mapErrorToUserMessage } from "@/lib/error-utils";
 import {
   Drawer,
   DrawerContent,
