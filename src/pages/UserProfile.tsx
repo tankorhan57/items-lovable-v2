@@ -184,11 +184,17 @@ export default function UserProfile() {
               )}
             </div>
           </div>
-          <FollowButton
-            targetUserId={profileData.id}
-            isPrivate={profileData.is_private}
-            onStatusChange={loadProfile}
-          />
+          <div className="flex items-center gap-2">
+            <FollowButton
+              targetUserId={profileData.id}
+              isPrivate={profileData.is_private}
+              onStatusChange={loadProfile}
+            />
+            <ReportBlockMenu
+              targetUserId={profileData.id}
+              onBlocked={() => navigate(-1)}
+            />
+          </div>
         </div>
 
         {profileData.bio && <p className="text-sm text-foreground/80 mb-6">{profileData.bio}</p>}

@@ -202,6 +202,11 @@ export default function PostDetail() {
             <button onClick={() => setNoteOpen(true)} className="p-2 text-muted-foreground hover:text-foreground transition-ritual tap-scale">
               <MessageSquare className="h-5 w-5" />
             </button>
+            <ReportBlockMenu
+              targetUserId={post.user_id}
+              targetPostId={post.id}
+              onBlocked={() => navigate(-1)}
+            />
           </div>
         </div>
 
