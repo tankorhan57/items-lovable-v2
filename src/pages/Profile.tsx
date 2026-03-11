@@ -21,6 +21,7 @@ export default function Profile() {
   const [totalPosts, setTotalPosts] = useState(0);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -29,6 +30,7 @@ export default function Profile() {
 
   const loadProfileData = async () => {
     if (!user) return;
+    setLoading(true);
     const days: PostDay[] = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -60,9 +62,43 @@ export default function Profile() {
     setFollowersCount(followers || 0);
     const { count: following } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", user.id).eq("status", "accepted");
     setFollowingCount(following || 0);
+    setLoading(false);
   };
 
-  if (!profile) return null;
+  if (!profile || loading) {
+    return (
+      <div className="min-h-screen bg-background animate-fade-in">
+        <div className="px-5 pt-14 pb-4">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3.5">
+              <div className="h-16 w-16 rounded-full bg-muted animate-pulse" />
+              <div className="space-y-2">
+                <div className="h-5 w-32 rounded bg-muted animate-pulse" />
+                <div className="h-3 w-20 rounded bg-muted animate-pulse" />
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-8 mb-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="text-center space-y-1.5">
+                <div className="h-5 w-8 rounded bg-muted animate-pulse mx-auto" />
+                <div className="h-3 w-14 rounded bg-muted animate-pulse" />
+              </div>
+            ))}
+          </div>
+          <div className="h-3 w-28 rounded bg-muted animate-pulse" />
+        </div>
+        <div className="mx-4 p-4 surface-card border border-border">
+          <div className="h-3 w-20 rounded bg-muted animate-pulse mb-3" />
+          <div className="grid grid-cols-7 gap-2">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="aspect-square w-full rounded-xl bg-muted animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
