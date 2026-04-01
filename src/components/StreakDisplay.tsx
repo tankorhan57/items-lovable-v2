@@ -10,7 +10,7 @@ interface StreakDisplayProps {
   showMilestones?: boolean;
 }
 
-const MILESTONES = [7, 30, 100, 365];
+const MILESTONES = [2, 5, 14, 50];
 
 function getMilestone(streak: number): number | null {
   for (let i = MILESTONES.length - 1; i >= 0; i--) {
@@ -21,10 +21,10 @@ function getMilestone(streak: number): number | null {
 
 function getMilestoneLabel(milestone: number): string {
   switch (milestone) {
-    case 7: return "1 week";
-    case 30: return "1 month";
-    case 100: return "100 days";
-    case 365: return "1 year";
+    case 2: return "2 days";
+    case 5: return "5 days";
+    case 14: return "2 weeks";
+    case 50: return "50 days";
     default: return `${milestone} days`;
   }
 }
