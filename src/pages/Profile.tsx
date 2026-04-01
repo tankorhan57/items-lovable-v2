@@ -57,10 +57,11 @@ export default function Profile() {
     setPosts(days);
     const { count: total } = await supabase.from("posts").select("*", { count: "exact", head: true }).eq("user_id", user.id).not("confirmed_at", "is", null);
     setTotalPosts(total || 0);
-    const { data: streakData } = await supabase.from("streaks").select("current_streak, longest_streak, grace_used").eq("user_id", user.id).single();
+    const { data: streakData } = await supabase.from("streaks").select("current_streak, longest_streak, grace_used, last_posted_date").eq("user_id", user.id).single();
     setStreak(streakData?.current_streak || 0);
     setLongestStreak((streakData as any)?.longest_streak || 0);
     setGraceUsed(streakData?.grace_used || false);
+    setLastPostedDate(streakData?.last_posted_date || null);
     const { count: followers } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", user.id).eq("status", "accepted");
     setFollowersCount(followers || 0);
     const { count: following } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", user.id).eq("status", "accepted");
