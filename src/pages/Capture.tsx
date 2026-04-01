@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { mapErrorToUserMessage } from "@/lib/error-utils";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { compressImage } from "@/lib/image-utils";
 import { getCurrentPosition } from "@/lib/geolocation";
 import DailyImmersion from "@/components/DailyImmersion";
+import PromptGame from "@/components/PromptGame";
 
 export default function Capture() {
   const { user } = useAuth();
