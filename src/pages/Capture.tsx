@@ -135,6 +135,10 @@ export default function Capture() {
     setCity(null);
   };
 
+  const handleGameComplete = useCallback((_wrongGuesses: number) => {
+    setGameDone(true);
+  }, []);
+
   if (!prompt) {
     return (
       <div className="flex min-h-screen items-center justify-center px-6">
@@ -145,10 +149,6 @@ export default function Capture() {
       </div>
     );
   }
-
-  const handleGameComplete = useCallback((wrongGuesses: number) => {
-    setGameDone(true);
-  }, []);
 
   // Game gate — show before immersion if not yet played and not already posted
   if (!gameDone && prompt && !hasPosted) {
