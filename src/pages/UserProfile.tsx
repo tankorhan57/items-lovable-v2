@@ -191,6 +191,11 @@ export default function UserProfile() {
               isPrivate={profileData.is_private}
               onStatusChange={loadProfile}
             />
+            <ShareButton
+              title={`${profileData.display_name || profileData.username} on Items`}
+              text={`Check out @${profileData.username} on Items`}
+              url={`${window.location.origin}/user/${profileData.id}`}
+            />
             <ReportBlockMenu
               targetUserId={profileData.id}
               onBlocked={() => navigate(-1)}

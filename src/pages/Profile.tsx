@@ -121,9 +121,16 @@ export default function Profile() {
               <p className="text-meta mt-0.5">@{profile.username}</p>
             </div>
           </div>
-          <button onClick={() => navigate("/settings")} className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all tap-scale">
-            <Settings className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <ShareButton
+              title="Items"
+              text={`Check out @${profile.username} on Items`}
+              url={`${window.location.origin}/user/${user!.id}`}
+            />
+            <button onClick={() => navigate("/settings")} className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all tap-scale">
+              <Settings className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {profile.bio && (
