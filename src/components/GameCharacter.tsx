@@ -70,14 +70,14 @@ type Row = Pixel[];
 
 const _ = C.t;
 
-// ── HAT (rows 0-6) — wide-brimmed adventure fedora ──
+// ── HAT (rows 0-6) — tall cowboy hat with upturned brim ──
 const hatRows: Row[] = [
-  // Row 0: crown peak
-  [_,_,_,_,_,_,_,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,_,_,_,_,_,_,_],
-  // Row 1: crown top with dent
-  [_,_,_,_,_,_,C.hat,C.hat,C.hatHighlight,C.hat,C.hat,C.hatHighlight,C.hat,C.hat,_,_,_,_,_,_],
+  // Row 0: tall crown tip (narrower)
+  [_,_,_,_,_,_,_,_,C.hat,C.hat,C.hat,C.hat,_,_,_,_,_,_,_,_],
+  // Row 1: crown top — pinched/creased
+  [_,_,_,_,_,_,_,C.hat,C.hatHighlight,C.hat,C.hat,C.hatHighlight,C.hat,_,_,_,_,_,_,_],
   // Row 2: crown body
-  [_,_,_,_,_,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,_,_,_,_,_],
+  [_,_,_,_,_,_,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,_,_,_,_,_,_],
   // Row 3: crown lower
   [_,_,_,_,_,C.hat,C.hatHighlight,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hatHighlight,C.hat,_,_,_,_,_],
   // Row 4: hat band (distinctive)
