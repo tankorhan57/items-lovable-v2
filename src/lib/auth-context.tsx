@@ -41,7 +41,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchProfile(session.user.id), 0);
+          setTimeout(() => {
+            fetchProfile(session.user.id);
+            // Redeem invite code if present in user metadata
+            const inviteCode = session.user.user_metadata?.invite_code;
+            if (inviteCode) {
+              redeemInviteCode(session.user.id, inviteCode);
+            }
+          }, 0);
         } else {
           setProfile(null);
         }
