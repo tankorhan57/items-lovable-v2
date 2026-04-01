@@ -286,7 +286,16 @@
   animation: pixel-shake-fast 0.1s linear infinite;
 }
 
-/* Character walk-in animation */
+/* Idle bounce for mascot */
+@keyframes idle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.animate-idle-bounce {
+  animation: idle-bounce 2s ease-in-out infinite;
+}
+
+
 @keyframes walk-in {
   0% { transform: translateX(-120px) translateY(8px); opacity: 0; }
   20% { opacity: 1; }

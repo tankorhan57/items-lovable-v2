@@ -244,15 +244,17 @@ export default function GameCharacter({ state, size = 3, animate = true }: GameC
     ...legRows,    // 19-29
   ];
 
-  const shakeClass =
+  const animClass =
     animate && state === 5
       ? 'animate-pixel-shake-fast'
       : animate && state === 4
         ? 'animate-pixel-shake'
-        : '';
+        : animate && state <= 1
+          ? 'animate-idle-bounce'
+          : '';
 
   return (
-    <div className={`relative inline-block ${shakeClass}`}>
+    <div className={`relative inline-block ${animClass}`}>
       <svg
         width={GRID_W * size}
         height={GRID_H * size}
