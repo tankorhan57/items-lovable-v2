@@ -218,6 +218,30 @@ export type Database = {
           },
         ]
       }
+      game_results: {
+        Row: {
+          daily_item_id: string
+          id: string
+          solved_at: string
+          user_id: string
+          wrong_guesses: number
+        }
+        Insert: {
+          daily_item_id: string
+          id?: string
+          solved_at?: string
+          user_id: string
+          wrong_guesses: number
+        }
+        Update: {
+          daily_item_id?: string
+          id?: string
+          solved_at?: string
+          user_id?: string
+          wrong_guesses?: number
+        }
+        Relationships: []
+      }
       invites: {
         Row: {
           created_at: string
@@ -638,6 +662,13 @@ export type Database = {
           p_window_minutes: number
         }
         Returns: boolean
+      }
+      get_game_ranking: {
+        Args: { p_daily_item_id: string; p_wrong_guesses: number }
+        Returns: {
+          avg_wrong: number
+          top_percent: number
+        }[]
       }
       has_posted_today: { Args: { p_user_id: string }; Returns: boolean }
       is_following: {

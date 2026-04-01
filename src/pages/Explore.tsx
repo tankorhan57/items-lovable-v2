@@ -177,9 +177,9 @@ export default function Explore() {
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary mb-5">
           <Lock className="h-7 w-7 text-muted-foreground" />
         </div>
-        <h2 className="text-foreground mb-2">Post to explore</h2>
+        <h2 className="text-foreground mb-2">Today's item is waiting...</h2>
         <p className="text-meta text-center max-w-xs">
-          Share your photo for today's Item to unlock how others around the world responded.
+          Play to reveal it
         </p>
       </div>
     );

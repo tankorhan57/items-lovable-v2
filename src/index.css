@@ -264,3 +264,24 @@
 .streak-ring-year {
   animation: streak-glow 3s ease-in-out infinite;
 }
+
+/* Pixel shake for GameCharacter */
+@keyframes pixel-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+@keyframes pixel-shake-fast {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+.animate-pixel-shake {
+  animation: pixel-shake 0.15s linear infinite;
+}
+
+.animate-pixel-shake-fast {
+  animation: pixel-shake-fast 0.1s linear infinite;
+}

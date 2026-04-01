@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { mapErrorToUserMessage } from "@/lib/error-utils";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,12 +8,14 @@ import { toast } from "sonner";
 import { compressImage } from "@/lib/image-utils";
 import { getCurrentPosition } from "@/lib/geolocation";
 import DailyImmersion from "@/components/DailyImmersion";
+import PromptGame from "@/components/PromptGame";
 
 export default function Capture() {
   const { user } = useAuth();
   const [prompt, setPrompt] = useState<{ id: string; prompt_text: string; category: string } | null>(null);
   const [hasPosted, setHasPosted] = useState(false);
   const [showImmersion, setShowImmersion] = useState(false);
+  const [gameDone, setGameDone] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -49,7 +51,14 @@ export default function Capture() {
         setHasPosted(true);
         setConfirmed(true);
         setPreview(post.image_url);
+        setGameDone(true);
       } else {
+        // Check if game already played today
+        const dateKey = new Date().toISOString().split("T")[0];
+        const gameResult = localStorage.getItem(`items-game-${dateKey}`);
+        if (gameResult !== null) {
+          setGameDone(true);
+        }
         const utcDate = new Date().toISOString().split("T")[0];
         const seen = sessionStorage.getItem("immersion_seen");
         if (seen !== utcDate) setShowImmersion(true);
@@ -126,6 +135,10 @@ export default function Capture() {
     setCity(null);
   };
 
+  const handleGameComplete = useCallback((_wrongGuesses: number) => {
+    setGameDone(true);
+  }, []);
+
   if (!prompt) {
     return (
       <div className="flex min-h-screen items-center justify-center px-6">
@@ -134,6 +147,19 @@ export default function Capture() {
           <p className="text-meta">Check back soon — the next Item is on its way.</p>
         </div>
       </div>
+    );
+  }
+
+  // Game gate — show before immersion if not yet played and not already posted
+  if (!gameDone && prompt && !hasPosted) {
+    const dateKey = new Date().toISOString().split("T")[0];
+    return (
+      <PromptGame
+        prompt={prompt.prompt_text}
+        dailyItemId={prompt.id}
+        dateKey={dateKey}
+        onComplete={handleGameComplete}
+      />
     );
   }
 
