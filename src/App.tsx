@@ -27,6 +27,7 @@ import ResetPassword from "@/pages/ResetPassword";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import NotFound from "./pages/NotFound";
+import GamePreview from "@/pages/GamePreview";
 
 const queryClient = new QueryClient();
 
