@@ -27,6 +27,7 @@ import ResetPassword from "@/pages/ResetPassword";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import NotFound from "./pages/NotFound";
+import GamePreview from "@/pages/GamePreview";
 
 const queryClient = new QueryClient();
 
@@ -94,6 +95,7 @@ function AppRoutes() {
       <Route path="/friends-feed" element={<ProtectedRoute><FriendsFeed /></ProtectedRoute>} />
       <Route path="/settings/reactions" element={<ProtectedRoute><ReactionSettings /></ProtectedRoute>} />
       <Route path="/install" element={<Install />} />
+      <Route path="/game-preview" element={<ProtectedRoute><GamePreview /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
