@@ -15,6 +15,7 @@ export default function Capture() {
   const [prompt, setPrompt] = useState<{ id: string; prompt_text: string; category: string } | null>(null);
   const [hasPosted, setHasPosted] = useState(false);
   const [showImmersion, setShowImmersion] = useState(false);
+  const [gameDone, setGameDone] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [confirming, setConfirming] = useState(false);
