@@ -20,6 +20,7 @@ export default function Profile() {
   const [streak, setStreak] = useState(0);
   const [longestStreak, setLongestStreak] = useState(0);
   const [graceUsed, setGraceUsed] = useState(false);
+  const [lastPostedDate, setLastPostedDate] = useState<string | null>(null);
   const [totalPosts, setTotalPosts] = useState(0);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
