@@ -95,6 +95,7 @@ function AppRoutes() {
       <Route path="/friends-feed" element={<ProtectedRoute><FriendsFeed /></ProtectedRoute>} />
       <Route path="/settings/reactions" element={<ProtectedRoute><ReactionSettings /></ProtectedRoute>} />
       <Route path="/install" element={<Install />} />
+      <Route path="/game-preview" element={<ProtectedRoute><GamePreview /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
