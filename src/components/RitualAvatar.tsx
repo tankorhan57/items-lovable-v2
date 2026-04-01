@@ -13,10 +13,10 @@ interface RitualAvatarProps {
 type MilestoneTier = "none" | "week" | "month" | "century" | "year";
 
 function getMilestoneTier(streak: number): MilestoneTier {
-  if (streak >= 365) return "year";
-  if (streak >= 100) return "century";
-  if (streak >= 30) return "month";
-  if (streak >= 7) return "week";
+  if (streak >= 50) return "year";
+  if (streak >= 14) return "century";
+  if (streak >= 5) return "month";
+  if (streak >= 2) return "week";
   return "none";
 }
 
