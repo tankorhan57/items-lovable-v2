@@ -10,11 +10,14 @@ interface RitualAvatarProps {
   className?: string;
 }
 
-function getStreakRingClass(streak: number): string {
-  if (streak >= 100) return "ring-2 ring-foreground/30";
-  if (streak >= 30) return "ring-2 ring-foreground/20";
-  if (streak >= 7) return "ring-[1.5px] ring-foreground/12";
-  return "";
+type MilestoneTier = "none" | "week" | "month" | "century" | "year";
+
+function getMilestoneTier(streak: number): MilestoneTier {
+  if (streak >= 365) return "year";
+  if (streak >= 100) return "century";
+  if (streak >= 30) return "month";
+  if (streak >= 7) return "week";
+  return "none";
 }
 
 const sizeMap = {
@@ -23,36 +26,54 @@ const sizeMap = {
   lg: "h-16 w-16",
 } as const;
 
-const RitualAvatar = forwardRef<HTMLSpanElement, RitualAvatarProps>(
+const ringPadding = {
+  sm: "p-[2px]",
+  md: "p-[2.5px]",
+  lg: "p-[3px]",
+} as const;
+
+const RitualAvatar = forwardRef<HTMLDivElement, RitualAvatarProps>(
   ({ src, fallback, streak = 0, size = "md", className }, ref) => {
-    const ringClass = getStreakRingClass(streak);
+    const tier = getMilestoneTier(streak);
+
+    if (tier === "none") {
+      return (
+        <Avatar
+          className={cn(sizeMap[size], "transition-all duration-300 ease-out", className)}
+        >
+          {src && (
+            <AvatarImage src={src} alt="" className="transition-opacity duration-300 ease-in-out" />
+          )}
+          <AvatarFallback className="bg-secondary text-muted-foreground font-serif">
+            {fallback || "?"}
+          </AvatarFallback>
+        </Avatar>
+      );
+    }
 
     return (
-      <Avatar
+      <div
         ref={ref}
         className={cn(
-          sizeMap[size],
-          ringClass,
-          "transition-all duration-300 ease-out",
+          "rounded-full transition-all duration-300 ease-out",
+          ringPadding[size],
+          `streak-ring-${tier}`,
           className
         )}
       >
-        {src && (
-          <AvatarImage
-            src={src}
-            alt=""
-            className="transition-opacity duration-300 ease-in-out"
-          />
-        )}
-        <AvatarFallback className="bg-secondary text-muted-foreground font-serif">
-          {fallback || "?"}
-        </AvatarFallback>
-      </Avatar>
+        <Avatar className={cn(sizeMap[size])}>
+          {src && (
+            <AvatarImage src={src} alt="" className="transition-opacity duration-300 ease-in-out" />
+          )}
+          <AvatarFallback className="bg-secondary text-muted-foreground font-serif">
+            {fallback || "?"}
+          </AvatarFallback>
+        </Avatar>
+      </div>
     );
   }
 );
 
 RitualAvatar.displayName = "RitualAvatar";
-
 
 export default RitualAvatar;
