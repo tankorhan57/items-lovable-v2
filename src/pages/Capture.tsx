@@ -146,6 +146,23 @@ export default function Capture() {
     );
   }
 
+  const handleGameComplete = useCallback((wrongGuesses: number) => {
+    setGameDone(true);
+  }, []);
+
+  // Game gate — show before immersion if not yet played and not already posted
+  if (!gameDone && prompt && !hasPosted) {
+    const dateKey = new Date().toISOString().split("T")[0];
+    return (
+      <PromptGame
+        prompt={prompt.prompt_text}
+        dailyItemId={prompt.id}
+        dateKey={dateKey}
+        onComplete={handleGameComplete}
+      />
+    );
+  }
+
   if (showImmersion) {
     return (
       <DailyImmersion
