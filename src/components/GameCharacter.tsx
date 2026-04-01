@@ -5,199 +5,243 @@ interface GameCharacterProps {
   animate?: boolean;
 }
 
-// 16×24 pixel grid — refined Indiana Jones / adventure explorer
+// 20×30 pixel grid — charismatic Indiana Jones adventurer with cowboy boots
 const C = {
+  // Hat — classic Indy fedora
   hat: '#7B4F2E',
   hatDark: '#5C3A1A',
   hatBand: '#C4742A',
   hatHighlight: '#9B6B3E',
+  hatRim: '#6B4020',
+  // Jacket — leather adventure jacket
   jacket: '#C4742A',
   jacketDark: '#8B4513',
   jacketLight: '#D4884A',
+  jacketEdge: '#A05A20',
+  // Shirt
   shirt: '#F5EDD4',
   shirtShadow: '#E0D8C0',
+  shirtV: '#D4C8A8',
+  // Pants
   pants: '#A0855A',
   pantsDark: '#8A7048',
+  pantsLight: '#B09868',
+  // Belt
   belt: '#5C3A1A',
   beltBuckle: '#D4A843',
-  boots: '#4A2E1A',
-  bootMid: '#7B4F2E',
-  bootHighlight: '#6B4528',
-  sole: '#3D2010',
+  beltBuckleShine: '#E8C060',
+  // Cowboy boots
+  boot: '#4A2E1A',
+  bootMid: '#6B4020',
+  bootShaft: '#5C3A1A',
+  bootStitch: '#8B5E3C',
+  bootHeel: '#3D2010',
+  bootToe: '#5C3818',
+  spur: '#D4A843',
+  // Skin
   skin: '#E8B88A',
   skinShadow: '#D4976A',
   skinHighlight: '#F0C89A',
+  // Face
   eyes: '#1A1A2E',
   eyeWhite: '#F5F5F0',
+  eyeShine: '#FFFFFF',
   mouth: '#8B4513',
   mouthDark: '#6B3410',
-  hair: '#3D2B1F',
-  hairLight: '#4D3B2F',
-  sweat: '#87CEEB',
   teeth: '#F5F5F0',
+  smirk: '#A05530',
+  // Hair
+  hair: '#3D2B1F',
+  stubble: '#6B5040',
+  // Effects
+  sweat: '#87CEEB',
+  // Accessories
   whip: '#5C3A1A',
+  whipEnd: '#4A2510',
   satchel: '#8B5E3C',
   satchelDark: '#6B4528',
+  satchelBuckle: '#D4A843',
+  // Transparent
   t: null as string | null,
 };
 
 type Pixel = string | null;
 type Row = Pixel[];
 
-// ── HAT (rows 0-5) ──
+const _ = C.t;
+
+// ── HAT (rows 0-6) — wide-brimmed adventure fedora ──
 const hatRows: Row[] = [
-  // Row 0: hat crown tip
-  [C.t,C.t,C.t,C.t,C.t,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.t,C.t,C.t,C.t,C.t],
-  // Row 1: hat crown
-  [C.t,C.t,C.t,C.t,C.hat,C.hat,C.hatHighlight,C.hat,C.hat,C.hatHighlight,C.hat,C.hat,C.t,C.t,C.t,C.t],
-  // Row 2: hat body
-  [C.t,C.t,C.t,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.t,C.t,C.t],
-  // Row 3: hat band
-  [C.t,C.t,C.t,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.t,C.t,C.t],
-  // Row 4: brim left + right overhang
-  [C.t,C.t,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.t,C.t],
-  // Row 5: brim shadow line
-  [C.t,C.t,C.t,C.hatDark,C.t,C.t,C.t,C.t,C.t,C.t,C.t,C.t,C.hatDark,C.t,C.t,C.t],
+  // Row 0: crown peak
+  [_,_,_,_,_,_,_,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,_,_,_,_,_,_,_],
+  // Row 1: crown top with dent
+  [_,_,_,_,_,_,C.hat,C.hat,C.hatHighlight,C.hat,C.hat,C.hatHighlight,C.hat,C.hat,_,_,_,_,_,_],
+  // Row 2: crown body
+  [_,_,_,_,_,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,_,_,_,_,_],
+  // Row 3: crown lower
+  [_,_,_,_,_,C.hat,C.hatHighlight,C.hat,C.hat,C.hat,C.hat,C.hat,C.hat,C.hatHighlight,C.hat,_,_,_,_,_],
+  // Row 4: hat band (distinctive)
+  [_,_,_,_,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,_,_,_,_],
+  // Row 5: wide brim
+  [_,_,_,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,_,_,_],
+  // Row 6: brim edge with shadow
+  [_,_,C.hatRim,C.hatRim,C.hatRim,C.hatDark,_,_,_,_,_,_,_,_,C.hatDark,C.hatRim,C.hatRim,C.hatRim,_,_],
 ];
 
-// ── HAIR + FOREHEAD (row 6) ──
-const hairRow: Row = [C.t,C.t,C.t,C.hair,C.skinHighlight,C.skin,C.skin,C.skin,C.skin,C.skin,C.skin,C.skinHighlight,C.hair,C.t,C.t,C.t];
+// ── HAIR + FOREHEAD (row 7) ──
+const hairRow: Row = [_,_,_,_,C.hair,C.hair,C.skinHighlight,C.skin,C.skin,C.skin,C.skin,C.skin,C.skin,C.skinHighlight,C.hair,C.hair,_,_,_,_];
 
-// ── TORSO BASE (rows 11-16) ──
-const torsoBase: Row[] = [
-  // Row 11: neck
-  [C.t,C.t,C.t,C.t,C.t,C.skin,C.skin,C.skin,C.skin,C.skin,C.skin,C.t,C.t,C.t,C.t,C.t],
-  // Row 12: collar + shoulders
-  [C.t,C.t,C.t,C.jacket,C.jacket,C.shirt,C.shirt,C.shirt,C.shirt,C.shirt,C.shirt,C.jacket,C.jacket,C.t,C.t,C.t],
-  // Row 13: jacket + shirt
-  [C.t,C.t,C.jacket,C.jacket,C.jacketLight,C.shirt,C.shirtShadow,C.shirt,C.shirt,C.shirtShadow,C.shirt,C.jacketLight,C.jacket,C.jacket,C.t,C.t],
-  // Row 14: jacket body + satchel strap
-  [C.t,C.t,C.jacketDark,C.jacket,C.jacket,C.jacket,C.satchel,C.jacket,C.jacket,C.jacket,C.jacket,C.jacket,C.jacket,C.jacketDark,C.t,C.t],
-  // Row 15: belt + buckle
-  [C.t,C.t,C.t,C.belt,C.belt,C.belt,C.beltBuckle,C.belt,C.belt,C.beltBuckle,C.belt,C.belt,C.belt,C.t,C.t,C.t],
-  // Row 16: satchel at hip
-  [C.t,C.t,C.t,C.t,C.jacket,C.jacket,C.satchel,C.satchelDark,C.jacket,C.jacket,C.jacket,C.jacket,C.t,C.t,C.t,C.t],
-];
-
-// ── LEGS + BOOTS (rows 17-23) ──
-const legRows: Row[] = [
-  // Row 17: pants top
-  [C.t,C.t,C.t,C.t,C.pants,C.pants,C.pants,C.pants,C.pants,C.pants,C.pants,C.pants,C.t,C.t,C.t,C.t],
-  // Row 18: pants
-  [C.t,C.t,C.t,C.t,C.pants,C.pants,C.pantsDark,C.t,C.t,C.pantsDark,C.pants,C.pants,C.t,C.t,C.t,C.t],
-  // Row 19: pants lower
-  [C.t,C.t,C.t,C.t,C.pants,C.pantsDark,C.pants,C.t,C.t,C.pants,C.pantsDark,C.pants,C.t,C.t,C.t,C.t],
-  // Row 20: boot cuff
-  [C.t,C.t,C.t,C.boots,C.boots,C.bootMid,C.boots,C.t,C.t,C.boots,C.bootMid,C.boots,C.boots,C.t,C.t,C.t],
-  // Row 21: boot body
-  [C.t,C.t,C.t,C.boots,C.bootHighlight,C.boots,C.boots,C.t,C.t,C.boots,C.boots,C.bootHighlight,C.boots,C.t,C.t,C.t],
-  // Row 22: boot sole
-  [C.t,C.t,C.sole,C.boots,C.boots,C.boots,C.boots,C.t,C.t,C.boots,C.boots,C.boots,C.boots,C.sole,C.t,C.t],
-  // Row 23: ground shadow
-  [C.t,C.t,C.sole,C.sole,C.sole,C.sole,C.sole,C.t,C.t,C.sole,C.sole,C.sole,C.sole,C.sole,C.t,C.t],
-];
-
-// ── FACE ROWS per state (rows 7-10: brow, eyes, nose, mouth) ──
+// ── FACE ROWS per state (rows 8-12: forehead/brow, eyes, cheeks, nose, mouth) ──
 function getFaceRows(state: number): Row[] {
-  const W = C.eyeWhite, E = C.eyes, S = C.skin, H = C.skinHighlight, D = C.skinShadow, M = C.mouth, T = C.teeth, SW = C.sweat, HR = C.hair;
+  const W = C.eyeWhite, E = C.eyes, S = C.skin, H = C.skinHighlight, D = C.skinShadow, M = C.mouth, T = C.teeth, SW = C.sweat, HR = C.hair, SH = C.eyeShine, SM = C.smirk, ST = C.stubble;
 
   switch (state) {
-    case 0: // Happy — big smile, friendly eyes
+    case 0: // Confident smirk — charismatic adventurer
       return [
-        [C.t,C.t,C.t,HR,S,S,S,S,S,S,S,S,S,HR,C.t,C.t],
-        [C.t,C.t,C.t,S,W,E,S,H,H,S,W,E,S,S,C.t,C.t],
-        [C.t,C.t,C.t,S,S,S,S,S,D,S,S,S,S,S,C.t,C.t],
-        [C.t,C.t,C.t,S,S,M,M,M,M,M,M,S,S,S,C.t,C.t],
+        [_,_,_,_,HR,S,S,S,S,S,S,S,S,S,S,HR,_,_,_,_],
+        [_,_,_,_,S,W,W,E,S,H,H,S,W,W,E,S,_,_,_,_],
+        [_,_,_,_,S,S,SH,E,S,S,S,S,S,SH,E,S,_,_,_,_],
+        [_,_,_,_,S,S,S,S,S,D,D,S,S,S,S,S,_,_,_,_],
+        [_,_,_,_,S,S,SM,SM,SM,SM,SM,SM,SM,S,S,S,_,_,_,_],
       ];
-    case 1: // Surprised — wider eyes, O mouth
+    case 1: // Surprised — raised brows, O mouth
       return [
-        [C.t,C.t,C.t,HR,S,S,S,S,S,S,S,S,S,HR,C.t,C.t],
-        [C.t,C.t,C.t,S,W,W,E,H,H,W,W,E,S,S,C.t,C.t],
-        [C.t,C.t,C.t,S,S,S,S,S,D,S,S,S,S,S,C.t,C.t],
-        [C.t,C.t,C.t,S,S,S,M,M,M,M,S,S,S,S,C.t,C.t],
+        [_,_,_,_,HR,S,S,E,S,S,S,S,E,S,S,HR,_,_,_,_],
+        [_,_,_,_,S,W,W,W,E,H,H,W,W,W,E,S,_,_,_,_],
+        [_,_,_,_,S,S,SH,S,E,S,S,S,SH,S,E,S,_,_,_,_],
+        [_,_,_,_,S,S,S,S,S,D,D,S,S,S,S,S,_,_,_,_],
+        [_,_,_,_,S,S,S,S,M,M,M,M,S,S,S,S,_,_,_,_],
       ];
-    case 2: // Worried — angled brows, sweat drop
+    case 2: // Worried — one brow up, sweat
       return [
-        [C.t,C.t,C.t,HR,E,S,S,S,S,S,S,E,S,HR,SW,C.t],
-        [C.t,C.t,C.t,S,W,E,S,H,H,S,W,E,S,S,C.t,C.t],
-        [C.t,C.t,C.t,S,S,S,S,S,D,S,S,S,S,S,C.t,C.t],
-        [C.t,C.t,C.t,S,S,S,S,M,M,S,S,S,S,S,C.t,C.t],
+        [_,_,_,_,HR,E,S,S,S,S,S,S,S,E,S,HR,SW,_,_,_],
+        [_,_,_,_,S,W,W,E,S,H,H,S,W,W,E,S,_,_,_,_],
+        [_,_,_,_,S,S,SH,E,S,S,S,S,S,SH,E,S,_,_,_,_],
+        [_,_,_,_,S,S,S,S,S,D,D,S,S,S,S,S,_,_,_,_],
+        [_,_,_,_,S,S,S,S,M,M,S,S,S,S,S,S,_,_,_,_],
       ];
-    case 3: // Anxious — very wide eyes, teeth showing
+    case 3: // Anxious — wide eyes, teeth grimace
       return [
-        [C.t,C.t,C.t,HR,E,S,S,S,S,S,S,E,S,HR,C.t,C.t],
-        [C.t,C.t,C.t,S,W,W,E,H,H,W,W,E,S,S,C.t,C.t],
-        [C.t,C.t,C.t,S,S,S,S,S,D,S,S,S,S,S,C.t,C.t],
-        [C.t,C.t,C.t,S,M,T,T,T,T,T,T,M,S,S,C.t,C.t],
+        [_,_,_,_,HR,E,S,S,S,S,S,S,S,E,S,HR,_,_,_,_],
+        [_,_,_,_,S,W,W,W,E,H,H,W,W,W,E,S,_,_,_,_],
+        [_,_,_,_,S,S,SH,S,E,S,S,S,SH,S,E,S,_,_,_,_],
+        [_,_,_,_,S,S,S,S,S,D,D,S,S,S,S,S,_,_,_,_],
+        [_,_,_,_,S,M,T,T,T,T,T,T,T,T,M,S,_,_,_,_],
       ];
-    case 4: // Scared — wide eyes, double sweat, O mouth
+    case 4: // Scared — wide eyes, double sweat
       return [
-        [C.t,C.t,C.t,HR,E,S,S,S,S,S,S,E,S,HR,SW,C.t],
-        [C.t,C.t,C.t,S,W,W,E,H,H,W,W,E,S,S,SW,C.t],
-        [C.t,C.t,C.t,S,S,S,S,S,D,S,S,S,S,S,C.t,C.t],
-        [C.t,C.t,C.t,S,S,M,M,M,M,M,M,S,S,S,C.t,C.t],
+        [_,_,_,_,HR,E,S,S,S,S,S,S,S,E,S,HR,SW,_,_,_],
+        [_,_,_,_,S,W,W,W,E,H,H,W,W,W,E,S,SW,_,_,_],
+        [_,_,_,_,S,S,SH,S,E,S,S,S,SH,S,E,S,_,_,_,_],
+        [_,_,_,_,S,S,S,S,S,D,D,S,S,S,S,S,_,_,_,_],
+        [_,_,_,_,S,S,M,M,M,M,M,M,M,M,S,S,_,_,_,_],
       ];
-    case 5: // Terrified — X eyes, 4 sweat drops, wide open mouth
+    case 5: // Terrified — X eyes, lots of sweat
       return [
-        [C.t,SW,C.t,HR,E,S,E,S,S,E,S,E,S,HR,SW,C.t],
-        [C.t,SW,C.t,S,S,E,S,H,H,S,E,S,S,S,SW,C.t],
-        [C.t,C.t,C.t,S,S,S,S,S,D,S,S,S,S,S,C.t,C.t],
-        [C.t,C.t,C.t,S,M,M,M,M,M,M,M,M,S,S,C.t,C.t],
+        [_,SW,_,_,HR,E,S,E,S,S,S,E,S,E,S,HR,SW,_,_,_],
+        [_,SW,_,_,S,S,E,S,S,H,H,S,S,E,S,S,SW,_,_,_],
+        [_,_,_,_,S,E,S,E,S,S,S,E,S,E,S,S,_,_,_,_],
+        [_,_,_,_,S,S,S,S,S,D,D,S,S,S,S,S,_,_,_,_],
+        [_,_,_,_,S,M,M,M,M,M,M,M,M,M,M,S,_,_,_,_],
       ];
-    case 6: // Defeated — closed eyes, tiny sad mouth
+    case 6: // Defeated — closed eyes, tiny sad mouth, stubble
       return [
-        [C.t,C.t,C.t,HR,S,S,S,S,S,S,S,S,S,HR,C.t,C.t],
-        [C.t,C.t,C.t,S,E,E,S,S,S,S,E,E,S,S,C.t,C.t],
-        [C.t,C.t,C.t,S,S,S,S,S,D,S,S,S,S,S,C.t,C.t],
-        [C.t,C.t,C.t,S,S,S,S,M,S,S,S,S,S,S,C.t,C.t],
+        [_,_,_,_,HR,S,S,S,S,S,S,S,S,S,S,HR,_,_,_,_],
+        [_,_,_,_,S,S,E,E,E,S,S,S,E,E,E,S,_,_,_,_],
+        [_,_,_,_,S,S,S,S,S,S,S,S,S,S,S,S,_,_,_,_],
+        [_,_,_,_,S,S,ST,S,ST,D,D,ST,S,ST,S,S,_,_,_,_],
+        [_,_,_,_,S,S,S,S,S,M,M,S,S,S,S,S,_,_,_,_],
       ];
     default:
       return getFaceRows(0);
   }
 }
 
+// ── TORSO BASE (rows 13-18) ──
+const torsoBase: Row[] = [
+  // Row 13: neck + collar
+  [_,_,_,_,_,_,C.skin,C.skin,C.skin,C.skin,C.skin,C.skin,C.skin,C.skin,_,_,_,_,_,_],
+  // Row 14: shoulders + V-neck shirt
+  [_,_,_,_,C.jacket,C.jacket,C.shirt,C.shirt,C.shirtV,C.shirt,C.shirt,C.shirtV,C.shirt,C.shirt,C.jacket,C.jacket,_,_,_,_],
+  // Row 15: jacket body
+  [_,_,_,C.jacket,C.jacket,C.jacketLight,C.shirt,C.shirtShadow,C.shirt,C.shirt,C.shirt,C.shirt,C.shirtShadow,C.shirt,C.jacketLight,C.jacket,C.jacket,_,_,_],
+  // Row 16: jacket + satchel strap
+  [_,_,_,C.jacketDark,C.jacket,C.jacket,C.jacket,C.satchel,C.satchelBuckle,C.jacket,C.jacket,C.jacket,C.jacket,C.jacket,C.jacket,C.jacket,C.jacketDark,_,_,_],
+  // Row 17: belt + buckle
+  [_,_,_,_,C.belt,C.belt,C.belt,C.belt,C.beltBuckle,C.beltBuckleShine,C.beltBuckle,C.belt,C.belt,C.belt,C.belt,C.belt,_,_,_,_],
+  // Row 18: satchel at hip + jacket hem
+  [_,_,_,_,_,C.jacketEdge,C.jacket,C.satchel,C.satchelDark,C.satchel,C.jacket,C.jacket,C.jacket,C.jacketEdge,_,_,_,_,_,_],
+];
+
+// ── LEGS + COWBOY BOOTS (rows 19-29) ──
+const legRows: Row[] = [
+  // Row 19: pants top
+  [_,_,_,_,_,C.pants,C.pants,C.pants,C.pants,C.pants,C.pants,C.pants,C.pants,C.pants,C.pants,_,_,_,_,_],
+  // Row 20: pants
+  [_,_,_,_,_,C.pants,C.pants,C.pantsDark,C.pants,_,_,C.pants,C.pantsDark,C.pants,C.pants,_,_,_,_,_],
+  // Row 21: pants lower
+  [_,_,_,_,_,C.pantsLight,C.pants,C.pantsDark,C.pants,_,_,C.pants,C.pantsDark,C.pants,C.pantsLight,_,_,_,_,_],
+  // Row 22: boot shaft top (tucked-in pants)
+  [_,_,_,_,C.bootShaft,C.bootShaft,C.bootStitch,C.bootShaft,C.bootShaft,_,_,C.bootShaft,C.bootShaft,C.bootStitch,C.bootShaft,C.bootShaft,_,_,_,_],
+  // Row 23: boot shaft with stitching
+  [_,_,_,_,C.boot,C.bootStitch,C.boot,C.boot,C.boot,_,_,C.boot,C.boot,C.boot,C.bootStitch,C.boot,_,_,_,_],
+  // Row 24: boot shaft lower
+  [_,_,_,_,C.boot,C.boot,C.bootMid,C.boot,C.boot,_,_,C.boot,C.boot,C.bootMid,C.boot,C.boot,_,_,_,_],
+  // Row 25: boot ankle + spur
+  [_,_,_,C.spur,C.boot,C.boot,C.boot,C.boot,C.boot,_,_,C.boot,C.boot,C.boot,C.boot,C.boot,C.spur,_,_,_],
+  // Row 26: boot foot — pointed cowboy toe
+  [_,_,_,_,C.boot,C.boot,C.bootMid,C.boot,C.boot,_,_,C.boot,C.boot,C.bootMid,C.boot,C.boot,_,_,_,_],
+  // Row 27: boot sole + heel
+  [_,_,_,C.bootHeel,C.bootHeel,C.boot,C.boot,C.boot,C.bootToe,_,_,C.bootToe,C.boot,C.boot,C.boot,C.bootHeel,C.bootHeel,_,_,_],
+  // Row 28: heel + pointed toe tip
+  [_,_,_,C.bootHeel,C.bootHeel,C.bootHeel,C.boot,C.boot,C.bootToe,C.bootToe,C.bootToe,C.bootToe,C.boot,C.boot,C.bootHeel,C.bootHeel,C.bootHeel,_,_,_],
+  // Row 29: ground shadow
+  [_,_,_,C.bootHeel,C.bootHeel,C.bootHeel,C.bootHeel,C.bootHeel,C.bootHeel,_,_,C.bootHeel,C.bootHeel,C.bootHeel,C.bootHeel,C.bootHeel,C.bootHeel,_,_,_],
+];
+
 // Arm/torso modifications per state
 function getTorsoRows(state: number): Row[] {
   const rows = torsoBase.map(r => [...r]);
 
   if (state === 0) {
-    // Right arm raised waving + whip coil in left hand
-    rows[1][12] = C.skin;
-    rows[1][13] = C.skin;
-    rows[0][13] = C.skin;
-    rows[0][14] = C.skinHighlight;
+    // Confident pose: right arm out with whip, left hand on hip
+    rows[1][15] = C.skin;
+    rows[1][16] = C.skin;
+    rows[0][16] = C.skin;
+    rows[0][17] = C.skinHighlight;
     // Whip in left hand
-    rows[2][1] = C.whip;
-    rows[3][0] = C.whip;
+    rows[2][2] = C.whip;
     rows[3][1] = C.whip;
+    rows[3][2] = C.whipEnd;
+    rows[4][0] = C.whipEnd;
   } else if (state === 3 || state === 4) {
-    // Arms slightly out defensively
-    rows[2][1] = C.skin;
-    rows[2][14] = C.skin;
+    // Arms out defensively
+    rows[2][2] = C.skin;
+    rows[2][17] = C.skin;
   } else if (state === 5) {
     // Arms up in panic
-    rows[1][1] = C.skin;
-    rows[1][14] = C.skin;
-    rows[0][1] = C.skinHighlight;
-    rows[0][14] = C.skinHighlight;
+    rows[1][2] = C.skin;
+    rows[1][17] = C.skin;
+    rows[0][2] = C.skinHighlight;
+    rows[0][17] = C.skinHighlight;
   }
 
   return rows;
 }
 
-const W = 16;
-const H = 24;
+const GRID_W = 20;
+const GRID_H = 30;
 
 export default function GameCharacter({ state, size = 3, animate = true }: GameCharacterProps) {
   const faceRows = getFaceRows(state);
   const bodyRows = getTorsoRows(state);
 
   const allRows: Row[] = [
-    ...hatRows,    // 0-5
-    hairRow,       // 6
-    ...faceRows,   // 7-10
-    ...bodyRows,   // 11-16
-    ...legRows,    // 17-23
+    ...hatRows,    // 0-6
+    hairRow,       // 7
+    ...faceRows,   // 8-12
+    ...bodyRows,   // 13-18
+    ...legRows,    // 19-29
   ];
 
   const shakeClass =
@@ -210,9 +254,9 @@ export default function GameCharacter({ state, size = 3, animate = true }: GameC
   return (
     <div className={`relative inline-block ${shakeClass}`}>
       <svg
-        width={W * size}
-        height={H * size}
-        viewBox={`0 0 ${W} ${H}`}
+        width={GRID_W * size}
+        height={GRID_H * size}
+        viewBox={`0 0 ${GRID_W} ${GRID_H}`}
         shapeRendering="crispEdges"
         style={{ imageRendering: 'pixelated' }}
       >
@@ -229,13 +273,13 @@ export default function GameCharacter({ state, size = 3, animate = true }: GameC
       {state === 6 && (
         <svg
           className="absolute inset-0"
-          width={W * size}
-          height={H * size}
-          viewBox={`0 0 ${W} ${H}`}
+          width={GRID_W * size}
+          height={GRID_H * size}
+          viewBox={`0 0 ${GRID_W} ${GRID_H}`}
           shapeRendering="crispEdges"
         >
-          {[4, 7, 10, 13].map(x => (
-            <rect key={`bar-${x}`} x={x - 0.25} y={0} width={0.5} height={H} fill="#1A1A2E" opacity={0.65} />
+          {[5, 8, 11, 14, 17].map(x => (
+            <rect key={`bar-${x}`} x={x - 0.25} y={0} width={0.5} height={GRID_H} fill="#1A1A2E" opacity={0.6} />
           ))}
         </svg>
       )}
