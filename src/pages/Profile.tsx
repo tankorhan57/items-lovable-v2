@@ -146,21 +146,12 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* Streak — quiet continuity numbers */}
-        {streak > 0 && (
-          <div className="flex items-center gap-4 mb-4">
-            <p className="text-[13px]">
-              <span className="font-bold text-foreground">{streak}</span>{" "}
-              <span className="text-muted-foreground">day{streak !== 1 ? "s" : ""}</span>
-            </p>
-            {longestStreak > 0 && longestStreak >= streak && (
-              <p className="text-[13px]">
-                <span className="text-muted-foreground">best:</span>{" "}
-                <span className="font-bold text-foreground">{longestStreak}</span>
-              </p>
-            )}
-          </div>
-        )}
+        <StreakDisplay
+          streak={streak}
+          longestStreak={longestStreak}
+          graceUsed={graceUsed}
+          lastPostedDate={lastPostedDate}
+        />
 
         <div className="flex items-center gap-5 text-meta">
           <div className="flex items-center gap-1.5">
