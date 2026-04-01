@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Camera, Globe, Flame, UserCircle } from "lucide-react";
+import { Camera, Globe, Flame } from "lucide-react";
 import AvatarUpload from "@/components/AvatarUpload";
+import FollowSuggestions from "@/components/FollowSuggestions";
 
 const slides = [
   {
@@ -40,9 +41,18 @@ export default function Onboarding() {
     navigate("/");
   };
 
-  const totalSteps = slides.length + 1; // slides + avatar step
+  const totalSteps = slides.length + 2; // slides + avatar + follow suggestions
   const isAvatarStep = step === slides.length;
-  const isLast = step === totalSteps - 1;
+  const isFollowStep = step === slides.length + 1;
+
+  if (isFollowStep) {
+    return (
+      <FollowSuggestions
+        onComplete={handleComplete}
+        onSkip={handleComplete}
+      />
+    );
+  }
 
   if (isAvatarStep) {
     return (
@@ -67,8 +77,8 @@ export default function Onboarding() {
                 />
               ))}
             </div>
-            <Button onClick={handleComplete} size="sm">
-              Begin
+            <Button onClick={() => setStep(step + 1)} size="sm">
+              Next
             </Button>
           </div>
         </div>

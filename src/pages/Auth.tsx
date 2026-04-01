@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { mapErrorToUserMessage } from "@/lib/error-utils";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,43 @@ export default function Auth() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const inviteCode = searchParams.get("invite");
+
+  // Auto-switch to signup if invite code present
+  useEffect(() => {
+    if (inviteCode && mode === "login") {
+      setMode("signup");
+    }
+  }, [inviteCode]);
+
+  const redeemInvite = async (userId: string) => {
+    if (!inviteCode) return;
+    try {
+      // Look up the invite
+      const { data: invite } = await supabase
+        .from("invites")
+        .select("id, inviter_id, redeemed_by")
+        .eq("invite_code", inviteCode)
+        .maybeSingle();
+
+      if (!invite || invite.redeemed_by) return;
+
+      // Redeem the invite
+      await supabase
+        .from("invites")
+        .update({ redeemed_by: userId, redeemed_at: new Date().toISOString() })
+        .eq("id", invite.id);
+
+      // Auto-follow: both directions
+      await supabase.from("follows").insert([
+        { follower_id: userId, following_id: invite.inviter_id, status: "accepted" },
+        { follower_id: invite.inviter_id, following_id: userId, status: "accepted" },
+      ]);
+    } catch {
+      // Non-critical, silently fail
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +63,12 @@ export default function Auth() {
         if (error) throw error;
         setMode("check-inbox");
       } else if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        // If logging in with invite code, try to redeem
+        if (inviteCode && signInData.user) {
+          await redeemInvite(signInData.user.id);
+        }
         navigate("/");
       } else {
         if (!username.trim()) {
@@ -54,7 +95,7 @@ export default function Auth() {
           email,
           password,
           options: {
-            data: { username: cleanUsername },
+            data: { username: cleanUsername, invite_code: inviteCode || undefined },
             emailRedirectTo: window.location.origin,
           },
         });
@@ -113,7 +154,9 @@ export default function Auth() {
         <div className="mb-12 text-center">
           <h1 className="text-5xl font-serif tracking-tight text-foreground">Items.</h1>
           <p className="mt-3 text-muted-foreground text-sm">
-            One prompt. One photo. A shared moment.
+            {inviteCode
+              ? "You've been invited! Create an account to join."
+              : "One prompt. One photo. A shared moment."}
           </p>
         </div>
 

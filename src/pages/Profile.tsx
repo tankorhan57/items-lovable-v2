@@ -3,6 +3,8 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Settings, Calendar, Archive } from "lucide-react";
+import StreakDisplay from "@/components/StreakDisplay";
+import ShareButton from "@/components/ShareButton";
 import { format } from "date-fns";
 import RitualAvatar from "@/components/RitualAvatar";
 
@@ -18,6 +20,7 @@ export default function Profile() {
   const [streak, setStreak] = useState(0);
   const [longestStreak, setLongestStreak] = useState(0);
   const [graceUsed, setGraceUsed] = useState(false);
+  const [lastPostedDate, setLastPostedDate] = useState<string | null>(null);
   const [totalPosts, setTotalPosts] = useState(0);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
@@ -54,10 +57,11 @@ export default function Profile() {
     setPosts(days);
     const { count: total } = await supabase.from("posts").select("*", { count: "exact", head: true }).eq("user_id", user.id).not("confirmed_at", "is", null);
     setTotalPosts(total || 0);
-    const { data: streakData } = await supabase.from("streaks").select("current_streak, longest_streak, grace_used").eq("user_id", user.id).single();
+    const { data: streakData } = await supabase.from("streaks").select("current_streak, longest_streak, grace_used, last_posted_date").eq("user_id", user.id).single();
     setStreak(streakData?.current_streak || 0);
     setLongestStreak((streakData as any)?.longest_streak || 0);
     setGraceUsed(streakData?.grace_used || false);
+    setLastPostedDate(streakData?.last_posted_date || null);
     const { count: followers } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", user.id).eq("status", "accepted");
     setFollowersCount(followers || 0);
     const { count: following } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", user.id).eq("status", "accepted");
@@ -117,9 +121,16 @@ export default function Profile() {
               <p className="text-meta mt-0.5">@{profile.username}</p>
             </div>
           </div>
-          <button onClick={() => navigate("/settings")} className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all tap-scale">
-            <Settings className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <ShareButton
+              title="Items"
+              text={`Check out @${profile.username} on Items`}
+              url={`${window.location.origin}/user/${user!.id}`}
+            />
+            <button onClick={() => navigate("/settings")} className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all tap-scale">
+              <Settings className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {profile.bio && (
@@ -142,21 +153,12 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* Streak — quiet continuity numbers */}
-        {streak > 0 && (
-          <div className="flex items-center gap-4 mb-4">
-            <p className="text-[13px]">
-              <span className="font-bold text-foreground">{streak}</span>{" "}
-              <span className="text-muted-foreground">day{streak !== 1 ? "s" : ""}</span>
-            </p>
-            {longestStreak > 0 && longestStreak >= streak && (
-              <p className="text-[13px]">
-                <span className="text-muted-foreground">best:</span>{" "}
-                <span className="font-bold text-foreground">{longestStreak}</span>
-              </p>
-            )}
-          </div>
-        )}
+        <StreakDisplay
+          streak={streak}
+          longestStreak={longestStreak}
+          graceUsed={graceUsed}
+          lastPostedDate={lastPostedDate}
+        />
 
         <div className="flex items-center gap-5 text-meta">
           <div className="flex items-center gap-1.5">

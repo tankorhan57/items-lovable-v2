@@ -35,13 +35,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await fetchProfile(user.id);
   };
 
+  const redeemInviteCode = async (userId: string, code: string) => {
+    try {
+      const { data: invite } = await supabase
+        .from("invites")
+        .select("id, inviter_id, redeemed_by")
+        .eq("invite_code", code)
+        .maybeSingle();
+
+      if (!invite || invite.redeemed_by) return;
+
+      await supabase
+        .from("invites")
+        .update({ redeemed_by: userId, redeemed_at: new Date().toISOString() })
+        .eq("id", invite.id);
+
+      // Auto-follow both directions
+      await supabase.from("follows").insert([
+        { follower_id: userId, following_id: invite.inviter_id, status: "accepted" },
+        { follower_id: invite.inviter_id, following_id: userId, status: "accepted" },
+      ]);
+
+      // Clear the invite code from metadata
+      await supabase.auth.updateUser({ data: { invite_code: null } });
+    } catch {
+      // Non-critical
+    }
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchProfile(session.user.id), 0);
+          setTimeout(() => {
+            fetchProfile(session.user.id);
+            // Redeem invite code if present in user metadata
+            const inviteCode = session.user.user_metadata?.invite_code;
+            if (inviteCode) {
+              redeemInviteCode(session.user.id, inviteCode);
+            }
+          }, 0);
         } else {
           setProfile(null);
         }

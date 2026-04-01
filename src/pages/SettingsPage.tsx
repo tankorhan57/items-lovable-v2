@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, LogOut, Moon, Sparkles, Bell, Heart, UserPlus, MessageSquare, Clock, Trash2, FileText } from "lucide-react";
 import AvatarUpload from "@/components/AvatarUpload";
+import InviteButton from "@/components/InviteButton";
 import { useNotifications } from "@/hooks/use-notifications";
 
 export default function SettingsPage() {
@@ -240,6 +241,8 @@ export default function SettingsPage() {
             <Sparkles className="h-4 w-4" />
             Customize reactions
           </button>
+
+          <InviteButton />
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-3 border-t border-border">
             <FileText className="h-4 w-4" />

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Calendar, Lock } from "lucide-react";
+import ShareButton from "@/components/ShareButton";
 import { format } from "date-fns";
 import FollowButton from "@/components/FollowButton";
 import { Badge } from "@/components/ui/badge";
@@ -189,6 +190,11 @@ export default function UserProfile() {
               targetUserId={profileData.id}
               isPrivate={profileData.is_private}
               onStatusChange={loadProfile}
+            />
+            <ShareButton
+              title={`${profileData.display_name || profileData.username} on Items`}
+              text={`Check out @${profileData.username} on Items`}
+              url={`${window.location.origin}/user/${profileData.id}`}
             />
             <ReportBlockMenu
               targetUserId={profileData.id}

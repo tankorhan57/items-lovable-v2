@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, X, Trash2 } from "lucide-react";
+import ShareButton from "@/components/ShareButton";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import AppreciateButton from "@/components/AppreciateButton";
@@ -202,6 +203,11 @@ export default function PostDetail() {
             <button onClick={() => setNoteOpen(true)} className="p-2 text-muted-foreground hover:text-foreground transition-ritual tap-scale">
               <MessageSquare className="h-5 w-5" />
             </button>
+            <ShareButton
+              title="Items"
+              text={`Check out this photo on Items`}
+              url={`${window.location.origin}/post/${post.id}`}
+            />
             <ReportBlockMenu
               targetUserId={post.user_id}
               targetPostId={post.id}
