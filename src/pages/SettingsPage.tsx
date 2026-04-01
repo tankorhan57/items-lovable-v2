@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, LogOut, Moon, Sparkles, Bell, Heart, UserPlus, MessageSquare, Clock, Trash2, FileText } from "lucide-react";
 import AvatarUpload from "@/components/AvatarUpload";
+import InviteButton from "@/components/InviteButton";
 import { useNotifications } from "@/hooks/use-notifications";
 
 export default function SettingsPage() {
