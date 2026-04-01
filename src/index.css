@@ -236,3 +236,31 @@
   animation: reaction-commit 550ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   pointer-events: none;
 }
+
+/* Streak milestone rings — warm gradient tones */
+.streak-ring-week {
+  background: linear-gradient(135deg, hsl(40 30% 75%), hsl(30 25% 65%));
+}
+
+.streak-ring-month {
+  background: linear-gradient(135deg, hsl(35 55% 60%), hsl(20 50% 50%));
+}
+
+.streak-ring-century {
+  background: linear-gradient(135deg, hsl(25 70% 55%), hsl(9 80% 52%));
+}
+
+.streak-ring-year {
+  background: linear-gradient(135deg, hsl(9 95% 58%), hsl(340 70% 50%), hsl(25 85% 55%));
+}
+
+/* Subtle pulse for century+ streaks */
+@keyframes streak-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+.streak-ring-century,
+.streak-ring-year {
+  animation: streak-glow 3s ease-in-out infinite;
+}
