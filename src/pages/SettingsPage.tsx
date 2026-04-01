@@ -242,6 +242,8 @@ export default function SettingsPage() {
             Customize reactions
           </button>
 
+          <InviteButton />
+
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-3 border-t border-border">
             <FileText className="h-4 w-4" />
             <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
