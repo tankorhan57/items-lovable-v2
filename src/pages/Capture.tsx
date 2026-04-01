@@ -51,7 +51,14 @@ export default function Capture() {
         setHasPosted(true);
         setConfirmed(true);
         setPreview(post.image_url);
+        setGameDone(true);
       } else {
+        // Check if game already played today
+        const dateKey = new Date().toISOString().split("T")[0];
+        const gameResult = localStorage.getItem(`items-game-${dateKey}`);
+        if (gameResult !== null) {
+          setGameDone(true);
+        }
         const utcDate = new Date().toISOString().split("T")[0];
         const seen = sessionStorage.getItem("immersion_seen");
         if (seen !== utcDate) setShowImmersion(true);
