@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, X, Trash2 } from "lucide-react";
+import ShareButton from "@/components/ShareButton";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import AppreciateButton from "@/components/AppreciateButton";
