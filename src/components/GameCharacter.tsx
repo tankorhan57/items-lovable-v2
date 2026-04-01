@@ -84,8 +84,8 @@ const hatRows: Row[] = [
   [_,_,_,_,_,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.beltBuckle,C.hatBand,C.hatBand,C.hatBand,C.hatBand,C.hatBand,_,_,_,_,_],
   // Row 5: wide brim — upturned edges (cowboy style)
   [_,_,C.hatRim,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatRim,_,_],
-  // Row 6: brim tips curled up
-  [_,C.hatRim,C.hatRim,_,_,_,C.hatDark,_,_,_,_,_,_,C.hatDark,_,_,_,_,C.hatRim,C.hatRim],
+  // Row 6: brim underside connecting to head
+  [_,C.hatRim,C.hatRim,_,_,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,C.hatDark,_,_,C.hatRim,C.hatRim],
 ];
 
 // ── HAIR + FOREHEAD (row 7) ──
