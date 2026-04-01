@@ -3,6 +3,8 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Settings, Calendar, Archive } from "lucide-react";
+import StreakDisplay from "@/components/StreakDisplay";
+import ShareButton from "@/components/ShareButton";
 import { format } from "date-fns";
 import RitualAvatar from "@/components/RitualAvatar";
 
