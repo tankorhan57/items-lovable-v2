@@ -286,7 +286,7 @@ export default function Capture() {
   if (confirmed) {
     return (
       <div className="min-h-screen bg-background animate-scale-in flex flex-col">
-        <div className="px-4 pt-14 pb-2">
+        <div className="px-4 pt-safe pb-2">
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
           <p className="text-[14px] font-serif italic text-foreground mt-1">"{prompt.prompt_text}"</p>
         </div>
