@@ -127,14 +127,13 @@ export default function Explore() {
   useEffect(() => { loadInitial(); }, [user, tab]);
 
   const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore || posts.length === 0 || tab !== "world") return;
+    if (loadingMore || !hasMore || posts.length === 0 || tab !== "world" || !todayItemId) return;
     setLoadingMore(true);
     const cursor = posts[posts.length - 1].confirmed_at;
-    const query = supabase.from("posts").select("id, image_url, city, confirmed_at, user_id")
+    const { data: rawPosts } = await supabase.from("posts").select("id, image_url, city, confirmed_at, user_id")
+      .eq("daily_item_id", todayItemId)
       .not("confirmed_at", "is", null).is("deleted_at", null).order("confirmed_at", { ascending: false })
       .lt("confirmed_at", cursor).limit(PAGE_SIZE);
-    if (todayItemId) query.eq("daily_item_id", todayItemId);
-    const { data: rawPosts } = await query;
     const enriched = await enrichPosts(rawPosts || []);
     setPosts(prev => [...prev, ...enriched]);
     setHasMore((rawPosts?.length || 0) >= PAGE_SIZE);
