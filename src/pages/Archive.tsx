@@ -100,7 +100,7 @@ export default function Archive() {
                 {weekItems.map((item, i) => (
                   <div
                     key={item.id}
-                    className="rounded-xl bg-card border border-border p-4 animate-fade-in"
+                    className="stagger-item rounded-xl bg-card border border-border p-4"
                     style={{ animationDelay: `${(gi * weekItems.length + i) * 50}ms` }}
                   >
                     <div className="flex items-start justify-between gap-3">

@@ -292,36 +292,74 @@ export default function Capture() {
     );
   }
 
-  /* ── Confirmation screen ── */
+  /* ── Confirmation screen with bloom ── */
   if (confirmed) {
     return (
-      <div className="min-h-app bg-background animate-scale-in flex flex-col">
-        <div className="px-4 pt-safe pb-2">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
-          <p className="text-[14px] font-serif italic text-foreground mt-1">"{prompt.prompt_text}"</p>
-        </div>
-        {preview && (
-          <div className="mx-2 relative">
-            <img
-              src={preview}
-              alt="Your capture"
-              className="w-full rounded-lg object-cover"
-              style={{ height: "63vh", boxShadow: "inset 0 8px 12px -4px rgba(0,0,0,0.02), inset 0 -8px 12px -4px rgba(0,0,0,0.02)" }}
+      <div className="min-h-app bg-background flex flex-col relative overflow-hidden">
+        {/* Bloom circles */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+          {[
+            { duration: "600ms", delay: "0ms" },
+            { duration: "900ms", delay: "200ms" },
+            { duration: "1200ms", delay: "400ms" },
+          ].map((b, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full"
+              style={{
+                width: 80,
+                height: 80,
+                background: "hsl(9 100% 58% / 0.12)",
+                animation: `bloomExpand ${b.duration} ease-out ${b.delay} forwards`,
+                transform: "scale(0)",
+                opacity: 0.5,
+              }}
             />
+          ))}
+        </div>
+
+        <div className="relative z-[1]">
+          <div
+            className="px-4 pt-safe pb-2"
+            style={{ opacity: 0, animation: "contentSlideUp 400ms ease forwards 0ms" }}
+          >
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
+            <p className="text-[14px] font-serif italic text-foreground mt-1">"{prompt.prompt_text}"</p>
           </div>
-        )}
-        <div className="px-4 pt-3 pb-6">
-          <p className="text-[15px] font-bold text-foreground">You contributed to today's world.</p>
-          <div className="flex items-center gap-1.5 mt-1">
-            {city && <span className="text-[12px] text-muted-foreground">{city}</span>}
-            {city && todayCount > 1 && <span className="text-[12px] text-muted-foreground">·</span>}
-            {todayCount > 1 && (
-              <span className="text-[12px] text-muted-foreground">{todayCount} people seeing this today</span>
+          {preview && (
+            <div
+              className="mx-2 relative"
+              style={{ opacity: 0, animation: "contentSlideUp 400ms ease forwards 80ms" }}
+            >
+              <img
+                src={preview}
+                alt="Your capture"
+                className="w-full rounded-lg object-cover"
+                style={{ height: "63vh", boxShadow: "inset 0 8px 12px -4px rgba(0,0,0,0.02), inset 0 -8px 12px -4px rgba(0,0,0,0.02)" }}
+              />
+            </div>
+          )}
+          <div
+            className="px-4 pt-3 pb-6"
+            style={{ opacity: 0, animation: "contentSlideUp 400ms ease forwards 160ms" }}
+          >
+            <p className="text-[15px] font-bold text-foreground">You contributed to today's world.</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              {city && <span className="text-[12px] text-muted-foreground">{city}</span>}
+              {city && todayCount > 1 && <span className="text-[12px] text-muted-foreground">·</span>}
+              {todayCount > 1 && (
+                <span className="text-[12px] text-muted-foreground">{todayCount} people seeing this today</span>
+              )}
+            </div>
+            {streakCount > 1 && (
+              <p
+                className="text-[12px] text-muted-foreground mt-0.5"
+                style={{ opacity: 0, animation: "contentSlideUp 400ms ease forwards 240ms" }}
+              >
+                🔥 {streakCount} day streak
+              </p>
             )}
           </div>
-          {streakCount > 1 && (
-            <p className="text-[12px] text-muted-foreground mt-0.5">{streakCount} days</p>
-          )}
         </div>
       </div>
     );
@@ -361,16 +399,35 @@ export default function Capture() {
             </div>
           </>
         ) : (
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="group flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-card shadow-soft transition-all duration-200 hover:border-primary/30 hover:shadow-card tap-scale"
-            style={{ height: "63vh" }}
-          >
-            <Camera className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors mb-4" />
-            <span className="text-[15px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-              Tap to capture
-            </span>
-          </button>
+          <>
+            <div className="relative flex items-center justify-center" style={{ height: "63vh" }}>
+              {/* Pulsing ring behind button */}
+              <div
+                className="absolute rounded-lg"
+                style={{
+                  width: "calc(100% + 8px)",
+                  height: "calc(100% + 8px)",
+                  background: "conic-gradient(hsl(9 100% 58%), hsl(9 100% 58% / 0.3), hsl(9 100% 58%))",
+                  animation: "ringPulse 2.5s ease-in-out infinite",
+                  opacity: 0.4,
+                }}
+              />
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="relative z-[1] w-full h-full group flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-card shadow-soft transition-all duration-200 hover:border-primary/30 hover:shadow-card tap-scale"
+              >
+                <Camera className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors mb-4" />
+                <span className="text-[15px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                  Tap to capture
+                </span>
+              </button>
+            </div>
+            {todayCount > 0 && (
+              <p className="text-meta text-center mt-3" style={{ opacity: 0, animation: "contentSlideUp 400ms ease forwards 200ms" }}>
+                🔥 {todayCount} {todayCount === 1 ? "person has" : "people have"} captured today
+              </p>
+            )}
+          </>
         )}
       </div>
       <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
