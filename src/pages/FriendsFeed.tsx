@@ -196,7 +196,7 @@ export default function FriendsFeed() {
   return (
     <div className="fixed inset-0 bg-background z-50 overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="px-4 pt-12 pb-1 flex items-center justify-between flex-shrink-0">
+      <div className="px-4 pt-safe-sm pb-1 flex items-center justify-between flex-shrink-0">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-muted-foreground hover:text-foreground transition-ritual tap-scale">
           <ArrowLeft className="h-5 w-5" />
         </button>

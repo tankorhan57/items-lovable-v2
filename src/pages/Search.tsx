@@ -84,7 +84,7 @@ export default function Search() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <div className="px-6 pt-12 pb-3">
+      <div className="px-6 pt-safe-sm pb-3">
         <div className="flex items-center gap-3 mb-4">
           <button onClick={() => navigate(-1)} className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary tap-scale transition-ritual">
             <ArrowLeft className="h-5 w-5" />

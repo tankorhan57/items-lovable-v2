@@ -142,7 +142,7 @@ export default function PostDetail() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg px-4 pt-12 pb-3 flex items-center justify-between border-b border-border">
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg px-4 pt-safe-sm pb-3 flex items-center justify-between border-b border-border">
         <button onClick={() => navigate(-1)} className="p-2 text-muted-foreground hover:text-foreground transition-ritual tap-scale">
           <ArrowLeft className="h-5 w-5" />
         </button>

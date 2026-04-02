@@ -213,13 +213,13 @@ export default function Explore() {
         className={cn(
           "z-40",
           tab === "world"
-            ? "fixed top-0 left-0 right-0 pt-14 pb-2 px-5 flex items-center justify-between pointer-events-none"
+            ? "fixed top-0 left-0 right-0 pt-safe pb-2 px-5 flex items-center justify-between pointer-events-none"
             : "sticky top-0 bg-background/95 backdrop-blur-xl border-b border-border"
         )}
         data-feed-header
       >
         {tab === "following" && (
-          <div className="px-5 pt-14 pb-2 flex items-start justify-between">
+          <div className="px-5 pt-safe pb-2 flex items-start justify-between">
             <div>
               <h1 className="text-[28px] font-serif font-bold text-foreground">Explore</h1>
               {todayPrompt && (

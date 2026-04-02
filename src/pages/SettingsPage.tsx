@@ -94,7 +94,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <div className="px-6 pt-12 pb-6">
+      <div className="px-6 pt-safe-sm pb-6">
         <div className="flex items-center gap-3 mb-8">
           <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-5 w-5" />
