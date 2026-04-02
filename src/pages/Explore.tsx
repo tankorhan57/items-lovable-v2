@@ -34,6 +34,7 @@ export default function Explore() {
   const [notePostId, setNotePostId] = useState<string | null>(null);
   const [noteOwnerId, setNoteOwnerId] = useState("");
   const [todayPrompt, setTodayPrompt] = useState<string | null>(null);
+  const [todayItemId, setTodayItemId] = useState<string | null>(null);
 
   // Appreciation state per post
   const [appreciated, setAppreciated] = useState<Record<string, boolean>>({});
@@ -91,18 +92,22 @@ export default function Explore() {
     setPosts([]);
     setHasMore(true);
 
-    // Always fetch today's prompt
+    // Always fetch today's prompt and daily_item_id
     const today = new Date().toISOString().split("T")[0];
-    const { data: dailyItem } = await supabase.from("daily_items").select("prompt_text").eq("active_date", today).single();
+    const { data: dailyItem } = await supabase.from("daily_items").select("id, prompt_text").eq("active_date", today).single();
     setTodayPrompt(dailyItem?.prompt_text || null);
+    setTodayItemId(dailyItem?.id || null);
 
     // Check hasPosted for Following tab gating only
     const { data: posted } = await supabase.rpc("has_posted_today", { p_user_id: user.id });
     setHasPosted(!!posted);
 
     if (tab === "world") {
-      const { data: rawPosts } = await supabase.from("posts").select("id, image_url, city, confirmed_at, user_id")
+      // Only show today's posts in the world feed
+      const query = supabase.from("posts").select("id, image_url, city, confirmed_at, user_id")
         .not("confirmed_at", "is", null).is("deleted_at", null).order("confirmed_at", { ascending: false }).limit(PAGE_SIZE);
+      if (dailyItem?.id) query.eq("daily_item_id", dailyItem.id);
+      const { data: rawPosts } = await query;
       const enriched = await enrichPosts(rawPosts || []);
       setPosts(enriched);
       setHasMore((rawPosts?.length || 0) >= PAGE_SIZE);
@@ -120,9 +125,11 @@ export default function Explore() {
     if (loadingMore || !hasMore || posts.length === 0 || tab !== "world") return;
     setLoadingMore(true);
     const cursor = posts[posts.length - 1].confirmed_at;
-    const { data: rawPosts } = await supabase.from("posts").select("id, image_url, city, confirmed_at, user_id")
+    const query = supabase.from("posts").select("id, image_url, city, confirmed_at, user_id")
       .not("confirmed_at", "is", null).is("deleted_at", null).order("confirmed_at", { ascending: false })
       .lt("confirmed_at", cursor).limit(PAGE_SIZE);
+    if (todayItemId) query.eq("daily_item_id", todayItemId);
+    const { data: rawPosts } = await query;
     const enriched = await enrichPosts(rawPosts || []);
     setPosts(prev => [...prev, ...enriched]);
     setHasMore((rawPosts?.length || 0) >= PAGE_SIZE);
@@ -131,7 +138,7 @@ export default function Explore() {
       loadFollowStatuses(enriched.map(p => p.user_id)),
     ]);
     setLoadingMore(false);
-  }, [loadingMore, hasMore, posts, tab]);
+  }, [loadingMore, hasMore, posts, tab, todayItemId]);
 
   // Scroll-based infinite loading
   const handleScroll = useCallback(() => {
