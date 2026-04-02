@@ -27,6 +27,15 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [hasPostedToday, setHasPostedToday] = useState(false);
   const [windowOpen, setWindowOpen] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [scrollY, setScrollY] = useState(0);
+
+  const handleScroll = useCallback(() => {
+    if (scrollRef.current) {
+      setScrollY(scrollRef.current.scrollTop);
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) return;
