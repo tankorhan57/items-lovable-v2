@@ -187,7 +187,7 @@ export default function FollowingFeedTab() {
   }
 
   return (
-    <div className="relative w-full" style={{ height: "calc(100dvh - 140px)" }}>
+    <div className="relative h-full w-full">
       {/* Prompt label */}
       <div className="px-4 pt-2 pb-3">
         <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>

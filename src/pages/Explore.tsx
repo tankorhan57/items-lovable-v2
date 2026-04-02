@@ -184,7 +184,7 @@ export default function Explore() {
 
   if (!hasPosted && !loading && tab === "following") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center px-6 animate-fade-in">
+      <div className="flex min-h-app flex-col items-center justify-center px-6 animate-fade-in">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary mb-5">
           <Lock className="h-7 w-7 text-muted-foreground" />
         </div>
@@ -201,10 +201,10 @@ export default function Explore() {
       ref={scrollRef}
       onScroll={handleScroll}
       className={cn(
-        "bg-background animate-fade-in",
+        "bg-background animate-fade-in h-app",
         tab === "following"
-          ? "h-[100dvh] flex flex-col overflow-hidden"
-          : "h-[100dvh] overflow-y-auto"
+          ? "flex flex-col overflow-hidden"
+          : "overflow-y-auto"
       )}
       style={tab === "world" ? { scrollSnapType: "y mandatory" } : undefined}
     >
@@ -265,11 +265,11 @@ export default function Explore() {
           <FollowingFeedTab />
         </div>
       ) : loading ? (
-        <div className="flex items-center justify-center h-[100dvh]">
+        <div className="flex h-app items-center justify-center">
           <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
         </div>
       ) : posts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-[100dvh] px-6" style={{ scrollSnapAlign: "start" }}>
+        <div className="flex h-app flex-col items-center justify-center px-6" style={{ scrollSnapAlign: "start" }}>
           <p className="text-meta text-center">No posts yet today. You're early!</p>
         </div>
       ) : (
@@ -278,7 +278,7 @@ export default function Explore() {
           <div
             className="relative flex flex-col items-center justify-center px-8"
             style={{
-              height: "calc(100dvh - 65px)",
+              height: "var(--app-shell-content-height)",
               scrollSnapAlign: "start",
               background: "linear-gradient(to bottom, hsl(var(--background)), hsl(var(--secondary)))",
             }}
@@ -311,7 +311,7 @@ export default function Explore() {
                 key={post.id}
                 className="relative w-full"
                 style={{
-                  height: "calc(100dvh - 65px)",
+                  height: "var(--app-shell-content-height)",
                   scrollSnapAlign: "start",
                 }}
               >

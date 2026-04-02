@@ -8,6 +8,9 @@
   :root {
     --font-serif: 'Instrument Serif', serif;
     --font-sans: 'DM Sans', sans-serif;
+    --app-shell-viewport-height: 100svh;
+    --app-shell-nav-height: calc(72px + env(safe-area-inset-bottom, 0px));
+    --app-shell-content-height: calc(var(--app-shell-viewport-height) - var(--app-shell-nav-height));
 
     /* SECTION 1 — Warm neutral light palette with real contrast */
     --background: 40 6% 93%;        /* ~#EDE9E5 warm stone */
@@ -190,6 +193,21 @@
   }
   .pt-safe-sm {
     padding-top: calc(env(safe-area-inset-top, 0px) + 2.5rem);
+  }
+  .min-h-app {
+    min-height: var(--app-shell-content-height);
+  }
+  .h-app {
+    height: var(--app-shell-content-height);
+  }
+  .pb-app-nav {
+    padding-bottom: var(--app-shell-nav-height);
+  }
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --app-shell-viewport-height: 100dvh;
   }
 }
 

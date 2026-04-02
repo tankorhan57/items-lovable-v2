@@ -212,7 +212,7 @@ export default function Capture() {
 
   if (!prompt) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-6">
+      <div className="flex min-h-app items-center justify-center px-6">
         <div className="text-center animate-fade-in">
           <h2 className="text-foreground mb-2">No prompt today</h2>
           <p className="text-meta">Check back soon — the next Item is on its way.</p>
@@ -251,7 +251,7 @@ export default function Capture() {
     const windowPassed = currentHour >= dailyWindow.window_end_hour;
 
     return (
-      <div className="min-h-screen bg-background animate-fade-in flex flex-col items-center justify-center px-8">
+      <div className="min-h-app bg-background animate-fade-in flex flex-col items-center justify-center px-8">
         <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-secondary mb-6">
           <Clock className="h-9 w-9 text-muted-foreground" />
         </div>
@@ -285,7 +285,7 @@ export default function Capture() {
   /* ── Confirmation screen ── */
   if (confirmed) {
     return (
-      <div className="min-h-screen bg-background animate-scale-in flex flex-col">
+      <div className="min-h-app bg-background animate-scale-in flex flex-col">
         <div className="px-4 pt-safe pb-2">
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
           <p className="text-[14px] font-serif italic text-foreground mt-1">"{prompt.prompt_text}"</p>
@@ -318,7 +318,7 @@ export default function Capture() {
   }
 
   return (
-    <div className="min-h-screen bg-background animate-fade-in flex flex-col">
+    <div className="min-h-app bg-background animate-fade-in flex flex-col">
       <div className="px-4 pt-safe pb-3">
         <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
         <p className="text-[14px] font-serif italic text-foreground mt-1">"{prompt.prompt_text}"</p>
