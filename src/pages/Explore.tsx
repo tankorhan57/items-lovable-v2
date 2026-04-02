@@ -91,9 +91,9 @@ export default function Explore() {
     setPosts([]);
     setHasMore(true);
 
-    // Always fetch today's prompt
+    // Always fetch today's prompt and daily_item_id
     const today = new Date().toISOString().split("T")[0];
-    const { data: dailyItem } = await supabase.from("daily_items").select("prompt_text").eq("active_date", today).single();
+    const { data: dailyItem } = await supabase.from("daily_items").select("id, prompt_text").eq("active_date", today).single();
     setTodayPrompt(dailyItem?.prompt_text || null);
 
     // Check hasPosted for Following tab gating only
@@ -101,8 +101,11 @@ export default function Explore() {
     setHasPosted(!!posted);
 
     if (tab === "world") {
-      const { data: rawPosts } = await supabase.from("posts").select("id, image_url, city, confirmed_at, user_id")
+      // Only show today's posts in the world feed
+      const query = supabase.from("posts").select("id, image_url, city, confirmed_at, user_id")
         .not("confirmed_at", "is", null).is("deleted_at", null).order("confirmed_at", { ascending: false }).limit(PAGE_SIZE);
+      if (dailyItem?.id) query.eq("daily_item_id", dailyItem.id);
+      const { data: rawPosts } = await query;
       const enriched = await enrichPosts(rawPosts || []);
       setPosts(enriched);
       setHasMore((rawPosts?.length || 0) >= PAGE_SIZE);
