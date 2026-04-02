@@ -54,7 +54,9 @@ export default function AppShell() {
   return (
     <div className="flex h-[var(--app-shell-viewport-height)] overflow-hidden flex-col bg-background">
       <main className="h-app min-h-0 overflow-y-auto overscroll-y-contain">
-        <Outlet />
+        <div key={location.pathname} className="animate-page-enter">
+          <Outlet />
+        </div>
       </main>
 
       {/* Bottom nav — high-contrast, structured */}
