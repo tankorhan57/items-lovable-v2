@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Camera, Compass, User, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
