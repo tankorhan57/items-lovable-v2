@@ -95,7 +95,7 @@ export default function Explore() {
     // Always fetch today's prompt and daily_item_id
     const today = new Date().toISOString().split("T")[0];
     const { data: dailyItem } = await supabase.from("daily_items").select("id, prompt_text").eq("active_date", today).single();
-    setTodayPrompt(dailyItem?.prompt_text || null);
+    setTodayItemId(dailyItem?.id || null);
 
     // Check hasPosted for Following tab gating only
     const { data: posted } = await supabase.rpc("has_posted_today", { p_user_id: user.id });
