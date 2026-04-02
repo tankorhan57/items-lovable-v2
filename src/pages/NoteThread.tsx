@@ -53,7 +53,7 @@ export default function NoteThread() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <div className="px-6 pt-12 pb-4">
+      <div className="px-6 pt-safe-sm pb-4">
         <div className="flex items-center gap-3 mb-2">
           <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-5 w-5" />

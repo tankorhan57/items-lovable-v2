@@ -70,7 +70,7 @@ export default function Archive() {
   return (
     <div className="min-h-screen bg-background animate-fade-in">
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="px-6 pt-12 pb-3 flex items-center gap-3">
+        <div className="px-6 pt-safe-sm pb-3 flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-5 w-5" />
           </button>
