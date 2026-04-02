@@ -138,7 +138,7 @@ export default function Explore() {
       loadFollowStatuses(enriched.map(p => p.user_id)),
     ]);
     setLoadingMore(false);
-  }, [loadingMore, hasMore, posts, tab]);
+  }, [loadingMore, hasMore, posts, tab, todayItemId]);
 
   // Scroll-based infinite loading
   const handleScroll = useCallback(() => {
