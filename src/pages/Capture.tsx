@@ -399,16 +399,33 @@ export default function Capture() {
             </div>
           </>
         ) : (
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="group flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-card shadow-soft transition-all duration-200 hover:border-primary/30 hover:shadow-card tap-scale"
-            style={{ height: "63vh" }}
-          >
-            <Camera className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors mb-4" />
-            <span className="text-[15px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-              Tap to capture
-            </span>
-          </button>
+          <div className="relative flex items-center justify-center" style={{ height: "63vh" }}>
+            {/* Pulsing ring behind button */}
+            <div
+              className="absolute rounded-lg"
+              style={{
+                width: "calc(100% + 8px)",
+                height: "calc(100% + 8px)",
+                background: "conic-gradient(hsl(9 100% 58%), hsl(9 100% 58% / 0.3), hsl(9 100% 58%))",
+                animation: "ringPulse 2.5s ease-in-out infinite",
+                opacity: 0.4,
+              }}
+            />
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="relative z-[1] w-full h-full group flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-card shadow-soft transition-all duration-200 hover:border-primary/30 hover:shadow-card tap-scale"
+            >
+              <Camera className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors mb-4" />
+              <span className="text-[15px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                Tap to capture
+              </span>
+            </button>
+          </div>
+          {todayCount > 0 && (
+            <p className="text-meta text-center mt-3" style={{ opacity: 0, animation: "contentSlideUp 400ms ease forwards 200ms" }}>
+              🔥 {todayCount} {todayCount === 1 ? "person has" : "people have"} captured today
+            </p>
+          )}
         )}
       </div>
       <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />

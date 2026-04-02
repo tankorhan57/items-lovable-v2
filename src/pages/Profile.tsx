@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Settings, Calendar, Archive } from "lucide-react";
+import { Settings, Calendar, Archive, CheckCircle, Camera } from "lucide-react";
 import StreakDisplay from "@/components/StreakDisplay";
 import ShareButton from "@/components/ShareButton";
 import { format } from "date-fns";
@@ -25,6 +25,8 @@ export default function Profile() {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [hasPostedToday, setHasPostedToday] = useState(false);
+  const [windowOpen, setWindowOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -34,6 +36,7 @@ export default function Profile() {
   const loadProfileData = async () => {
     if (!user) return;
     setLoading(true);
+    const today = new Date().toISOString().split("T")[0];
     const days: PostDay[] = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -55,6 +58,25 @@ export default function Profile() {
       });
     }
     setPosts(days);
+
+    // Check if posted today
+    const postedToday = days.find(d => d.date === today)?.image_url != null;
+    setHasPostedToday(postedToday);
+
+    // Check window
+    if (!postedToday) {
+      const { data: win } = await supabase
+        .from("daily_windows")
+        .select("window_start_hour, window_end_hour")
+        .eq("user_id", user.id)
+        .eq("active_date", today)
+        .maybeSingle();
+      if (win) {
+        const h = new Date().getHours();
+        setWindowOpen(h >= win.window_start_hour && h < win.window_end_hour);
+      }
+    }
+
     const { count: total } = await supabase.from("posts").select("*", { count: "exact", head: true }).eq("user_id", user.id).not("confirmed_at", "is", null);
     setTotalPosts(total || 0);
     const { data: streakData } = await supabase.from("streaks").select("current_streak, longest_streak, grace_used, last_posted_date").eq("user_id", user.id).single();
@@ -82,15 +104,14 @@ export default function Profile() {
               </div>
             </div>
           </div>
-          <div className="flex gap-8 mb-4">
+          <div className="flex gap-3 justify-center mb-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="text-center space-y-1.5">
-                <div className="h-5 w-8 rounded bg-muted animate-pulse mx-auto" />
-                <div className="h-3 w-14 rounded bg-muted animate-pulse" />
+              <div key={i} className="flex flex-col items-center px-4 py-2 rounded-xl bg-card border border-border">
+                <div className="h-5 w-8 rounded bg-muted animate-pulse" />
+                <div className="h-3 w-14 rounded bg-muted animate-pulse mt-1" />
               </div>
             ))}
           </div>
-          <div className="h-3 w-28 rounded bg-muted animate-pulse" />
         </div>
         <div className="mx-4 p-4 surface-card border border-border">
           <div className="h-3 w-20 rounded bg-muted animate-pulse mb-3" />
@@ -106,8 +127,13 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      {/* Header — tighter 8pt grid */}
-      <div className="px-5 pt-safe pb-4">
+      {/* Header with warm gradient banner */}
+      <div
+        className="px-5 pt-safe pb-4"
+        style={{
+          background: "linear-gradient(to bottom, hsl(9 100% 58% / 0.08), hsl(var(--background)))",
+        }}
+      >
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3.5">
             <RitualAvatar
@@ -137,19 +163,32 @@ export default function Profile() {
           <p className="text-[15px] text-foreground/80 mb-4 leading-relaxed">{profile.bio}</p>
         )}
 
-        {/* Stats row — confident sizing */}
-        <div className="flex gap-8 mb-4">
-          <div className="text-center">
-            <p className="text-lg font-semibold text-foreground">{totalPosts}</p>
-            <p className="text-meta mt-0.5">Items</p>
+        {/* Today's status chip */}
+        {hasPostedToday ? (
+          <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-4 text-[12px] font-semibold" style={{ background: "hsl(9 100% 58% / 0.1)", color: "hsl(9 100% 58%)" }}>
+            <CheckCircle className="h-3.5 w-3.5" />
+            Posted today
           </div>
-          <button onClick={() => navigate(`/user/${user!.id}/followers`)} className="text-center tap-scale">
-            <p className="text-lg font-semibold text-foreground">{followersCount}</p>
-            <p className="text-meta mt-0.5">Followers</p>
+        ) : windowOpen ? (
+          <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-4 text-[12px] font-semibold bg-secondary text-muted-foreground">
+            <Camera className="h-3.5 w-3.5" />
+            Capture window open
+          </div>
+        ) : null}
+
+        {/* Stats row as pill containers */}
+        <div className="flex gap-3 justify-center mb-4">
+          <div className="stagger-item flex flex-col items-center px-4 py-2 rounded-xl bg-card border border-border">
+            <p className="text-lg font-bold text-foreground">{totalPosts}</p>
+            <p className="text-[11px] text-muted-foreground">Items</p>
+          </div>
+          <button onClick={() => navigate(`/user/${user!.id}/followers`)} className="stagger-item flex flex-col items-center px-4 py-2 rounded-xl bg-card border border-border tap-scale">
+            <p className="text-lg font-bold text-foreground">{followersCount}</p>
+            <p className="text-[11px] text-muted-foreground">Followers</p>
           </button>
-          <button onClick={() => navigate(`/user/${user!.id}/following`)} className="text-center tap-scale">
-            <p className="text-lg font-semibold text-foreground">{followingCount}</p>
-            <p className="text-meta mt-0.5">Following</p>
+          <button onClick={() => navigate(`/user/${user!.id}/following`)} className="stagger-item flex flex-col items-center px-4 py-2 rounded-xl bg-card border border-border tap-scale">
+            <p className="text-lg font-bold text-foreground">{followingCount}</p>
+            <p className="text-[11px] text-muted-foreground">Following</p>
           </button>
         </div>
 
@@ -172,17 +211,34 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Last 7 days grid — card surface with visible elevation */}
+      {/* Last 7 days grid */}
       <div className="mx-4 mb-4 p-4 surface-card border border-border">
         <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-3">Last 7 days</p>
         <div className="grid grid-cols-7 gap-2">
           {posts.map((day) => (
             <div key={day.date} className="flex flex-col items-center gap-1.5">
-              <div className="aspect-square w-full overflow-hidden rounded-xl bg-secondary">
+              <div
+                className="aspect-square w-full overflow-hidden rounded-xl transition-all duration-150 ease-out"
+                style={
+                  day.image_url
+                    ? { cursor: "pointer" }
+                    : { border: "1.5px dashed hsl(var(--border))", borderRadius: "12px", opacity: 0.5 }
+                }
+                onMouseEnter={(e) => {
+                  if (day.image_url) {
+                    (e.currentTarget as HTMLElement).style.transform = "scale(1.04)";
+                    (e.currentTarget as HTMLElement).style.boxShadow = "0 0 12px hsl(9 100% 58% / 0.2)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = "";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "";
+                }}
+              >
                 {day.image_url ? (
                   <img src={day.image_url} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="h-full w-full flex items-center justify-center">
+                  <div className="h-full w-full flex items-center justify-center bg-secondary">
                     <div className="h-1.5 w-1.5 rounded-full bg-border" />
                   </div>
                 )}

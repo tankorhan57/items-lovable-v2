@@ -71,13 +71,22 @@ export default function AppShell() {
                   active ? "text-primary" : "text-muted-foreground"
                 )}
               >
-                <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.4 : 1.6} />
+                <Icon
+                  className="h-[22px] w-[22px] transition-transform duration-150 ease-out"
+                  strokeWidth={active ? 2.4 : 1.6}
+                  style={active ? { transform: "scale(1.05)" } : undefined}
+                />
                 {count != null && count > 0 && (
                   <span className="absolute top-0.5 right-2.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground ring-2 ring-card">
                     {count > 99 ? "99+" : count}
                   </span>
                 )}
                 <span className={cn("text-[11px]", active ? "font-semibold" : "font-medium")}>{label}</span>
+                {/* Active dot indicator */}
+                <div
+                  className="h-1 w-1 rounded-full bg-primary transition-opacity duration-200 ease-out"
+                  style={{ opacity: active ? 1 : 0 }}
+                />
               </button>
             );
           })}

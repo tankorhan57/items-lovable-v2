@@ -21,6 +21,14 @@ interface ActivityItem {
   created_at: string;
 }
 
+const ACTIVITY_ACCENT: Record<string, string> = {
+  appreciation: "hsl(9 100% 58%)",
+  follow: "#4A90D9",
+  follow_request: "#4A90D9",
+  follow_accepted: "#4A90D9",
+  note: "#C4742A",
+};
+
 const getIcon = (type: string) => {
   switch (type) {
     case "appreciation": return Heart;
@@ -168,23 +176,29 @@ export default function Activity() {
         </div>
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 px-6">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary border border-border mb-4">
-            <Bell className="h-6 w-6 text-muted-foreground" />
+          <div className="flex h-20 w-20 items-center justify-center rounded-full mb-5" style={{ background: "hsl(9 100% 58% / 0.1)" }}>
+            <Bell className="h-8 w-8" style={{ color: "hsl(9 100% 58%)" }} />
           </div>
-          <h3 className="font-serif text-xl font-bold text-foreground mb-1">No interactions yet.</h3>
+          <h3 className="font-serif text-xl font-bold text-foreground mb-1">Nothing yet</h3>
           <p className="text-meta text-center max-w-[240px]">
-            When someone appreciates or follows you, it will appear here.
+            Appreciations, follows, and notes will show up here
           </p>
         </div>
       ) : (
         <div className="px-4 space-y-1.5 pt-1">
-          {items.map((item) => {
+          {items.map((item, idx) => {
             const Icon = getIcon(item.type);
+            const accentColor = ACTIVITY_ACCENT[item.type] ?? "hsl(var(--border))";
             return (
               <button
                 key={item.id}
                 onClick={() => handleTap(item)}
-                className="flex items-center gap-3 p-3.5 w-full text-left rounded-xl bg-card border border-border shadow-soft tap-scale transition-ritual"
+                className="stagger-item flex items-center gap-3 p-3.5 w-full text-left rounded-xl bg-card border border-border shadow-soft tap-scale transition-ritual"
+                style={{
+                  borderLeft: `3px solid ${accentColor}`,
+                  paddingLeft: "12px",
+                  animationDelay: `${idx * 50}ms`,
+                }}
               >
                 <RitualAvatar
                   src={item.actor_avatar}
