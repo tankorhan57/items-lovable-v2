@@ -3,12 +3,29 @@ import { mapErrorToUserMessage } from "@/lib/error-utils";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Camera, Check, RotateCcw, MapPin } from "lucide-react";
+import { Camera, Check, RotateCcw, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { compressImage } from "@/lib/image-utils";
 import { getCurrentPosition } from "@/lib/geolocation";
 import DailyImmersion from "@/components/DailyImmersion";
 import PromptGame from "@/components/PromptGame";
+
+interface DailyWindow {
+  window_start_hour: number;
+  window_end_hour: number;
+}
+
+function getRandomWindowHours(): { start: number; end: number } {
+  // Random start between 7 and 20 (so window ends by midnight at latest: 20+4=24)
+  const start = 7 + Math.floor(Math.random() * 14); // 7..20
+  return { start, end: start + 4 };
+}
+
+function formatHour(h: number): string {
+  const period = h >= 12 ? "PM" : "AM";
+  const hour12 = h % 12 || 12;
+  return `${hour12} ${period}`;
+}
 
 export default function Capture() {
   const { user } = useAuth();
@@ -24,6 +41,8 @@ export default function Capture() {
   const [streakCount, setStreakCount] = useState(0);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [city, setCity] = useState<string | null>(null);
+  const [dailyWindow, setDailyWindow] = useState<DailyWindow | null>(null);
+  const [windowLoaded, setWindowLoaded] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -32,10 +51,12 @@ export default function Capture() {
 
   const loadDailyState = async () => {
     if (!user) return;
+    const today = new Date().toISOString().split("T")[0];
+
     const { data: item } = await supabase
       .from("daily_items")
       .select("*")
-      .eq("active_date", new Date().toISOString().split("T")[0])
+      .eq("active_date", today)
       .single();
 
     if (item) {
@@ -53,15 +74,13 @@ export default function Capture() {
         setPreview(post.image_url);
         setGameDone(true);
       } else {
-        // Check if game already played today
-        const dateKey = new Date().toISOString().split("T")[0];
+        const dateKey = today;
         const gameResult = localStorage.getItem(`items-game-${dateKey}`);
         if (gameResult !== null) {
           setGameDone(true);
         }
-        const utcDate = new Date().toISOString().split("T")[0];
         const seen = sessionStorage.getItem("immersion_seen");
-        if (seen !== utcDate) setShowImmersion(true);
+        if (seen !== today) setShowImmersion(true);
       }
 
       const { count } = await supabase
@@ -78,6 +97,58 @@ export default function Capture() {
         .maybeSingle();
       setStreakCount(streak?.current_streak || 0);
     }
+
+    // Load or create daily posting window
+    await loadOrCreateWindow(today);
+  };
+
+  const loadOrCreateWindow = async (today: string) => {
+    if (!user) return;
+
+    const { data: existingWindow } = await supabase
+      .from("daily_windows")
+      .select("window_start_hour, window_end_hour")
+      .eq("user_id", user.id)
+      .eq("active_date", today)
+      .maybeSingle();
+
+    if (existingWindow) {
+      setDailyWindow(existingWindow);
+    } else {
+      // Assign a random window
+      const { start, end } = getRandomWindowHours();
+      const { data: newWindow, error } = await supabase
+        .from("daily_windows")
+        .insert({
+          user_id: user.id,
+          active_date: today,
+          window_start_hour: start,
+          window_end_hour: end,
+        })
+        .select("window_start_hour, window_end_hour")
+        .single();
+
+      if (!error && newWindow) {
+        setDailyWindow(newWindow);
+      } else if (error?.code === "23505") {
+        // Race condition: another tab inserted it, re-fetch
+        const { data: refetch } = await supabase
+          .from("daily_windows")
+          .select("window_start_hour, window_end_hour")
+          .eq("user_id", user.id)
+          .eq("active_date", today)
+          .single();
+        if (refetch) setDailyWindow(refetch);
+      }
+    }
+    setWindowLoaded(true);
+  };
+
+  const isWithinWindow = (): boolean => {
+    if (!dailyWindow) return false;
+    const now = new Date();
+    const currentHour = now.getHours();
+    return currentHour >= dailyWindow.window_start_hour && currentHour < dailyWindow.window_end_hour;
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -173,17 +244,52 @@ export default function Capture() {
     );
   }
 
+  // Window lock — show countdown if outside posting window (skip if already posted)
+  if (windowLoaded && dailyWindow && !isWithinWindow() && !confirmed && !hasPosted) {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const windowPassed = currentHour >= dailyWindow.window_end_hour;
+
+    return (
+      <div className="min-h-screen bg-background animate-fade-in flex flex-col items-center justify-center px-8">
+        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-secondary mb-6">
+          <Clock className="h-9 w-9 text-muted-foreground" />
+        </div>
+        <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium mb-3">Today's Item</p>
+        <p className="text-[22px] font-serif italic text-foreground text-center max-w-[280px] leading-snug mb-6">
+          "{prompt.prompt_text}"
+        </p>
+        {windowPassed ? (
+          <>
+            <p className="text-[15px] font-semibold text-foreground mb-1">Your window has closed</p>
+            <p className="text-[13px] text-muted-foreground text-center max-w-xs">
+              Today's posting window was {formatHour(dailyWindow.window_start_hour)} – {formatHour(dailyWindow.window_end_hour)}. Come back tomorrow for a new window.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-[15px] font-semibold text-foreground mb-1">Your window opens soon</p>
+            <p className="text-[13px] text-muted-foreground text-center max-w-xs">
+              You can capture between{" "}
+              <span className="font-semibold text-foreground">{formatHour(dailyWindow.window_start_hour)}</span>
+              {" "}and{" "}
+              <span className="font-semibold text-foreground">{formatHour(dailyWindow.window_end_hour)}</span>
+              {" "}today.
+            </p>
+          </>
+        )}
+      </div>
+    );
+  }
+
   /* ── Confirmation screen ── */
   if (confirmed) {
     return (
       <div className="min-h-screen bg-background animate-scale-in flex flex-col">
-        {/* Persistent prompt label */}
         <div className="px-4 pt-14 pb-2">
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
           <p className="text-[14px] font-serif italic text-foreground mt-1">"{prompt.prompt_text}"</p>
         </div>
-
-        {/* Image — edge-to-edge, grounded */}
         {preview && (
           <div className="mx-2 relative">
             <img
@@ -194,8 +300,6 @@ export default function Capture() {
             />
           </div>
         )}
-
-        {/* Metadata below */}
         <div className="px-4 pt-3 pb-6">
           <p className="text-[15px] font-bold text-foreground">You contributed to today's world.</p>
           <div className="flex items-center gap-1.5 mt-1">
@@ -215,12 +319,15 @@ export default function Capture() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in flex flex-col">
-      {/* Persistent prompt label */}
       <div className="px-4 pt-14 pb-3">
         <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
         <p className="text-[14px] font-serif italic text-foreground mt-1">"{prompt.prompt_text}"</p>
+        {dailyWindow && (
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Window: {formatHour(dailyWindow.window_start_hour)} – {formatHour(dailyWindow.window_end_hour)}
+          </p>
+        )}
       </div>
-
       <div className="flex-1 flex flex-col px-2">
         {preview ? (
           <>
@@ -256,7 +363,6 @@ export default function Capture() {
           </button>
         )}
       </div>
-
       <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
     </div>
   );

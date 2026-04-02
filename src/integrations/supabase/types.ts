@@ -179,6 +179,33 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_windows: {
+        Row: {
+          active_date: string
+          created_at: string
+          id: string
+          user_id: string
+          window_end_hour: number
+          window_start_hour: number
+        }
+        Insert: {
+          active_date: string
+          created_at?: string
+          id?: string
+          user_id: string
+          window_end_hour: number
+          window_start_hour: number
+        }
+        Update: {
+          active_date?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          window_end_hour?: number
+          window_start_hour?: number
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           created_at: string
