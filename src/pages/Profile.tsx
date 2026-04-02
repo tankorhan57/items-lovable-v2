@@ -134,15 +134,6 @@ export default function Profile() {
     );
   }
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const [scrollY, setScrollY] = useState(0);
-
-  const handleScroll = useCallback(() => {
-    if (scrollRef.current) {
-      setScrollY(scrollRef.current.scrollTop);
-    }
-  }, []);
 
   const headerOpacity = Math.max(0, 0.08 - scrollY * 0.0004);
   const headerTranslate = scrollY * 0.35;
