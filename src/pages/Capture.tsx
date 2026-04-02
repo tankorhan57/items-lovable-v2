@@ -319,7 +319,7 @@ export default function Capture() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in flex flex-col">
-      <div className="px-4 pt-14 pb-3">
+      <div className="px-4 pt-safe pb-3">
         <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">Today's Item</p>
         <p className="text-[14px] font-serif italic text-foreground mt-1">"{prompt.prompt_text}"</p>
         {dailyWindow && (
