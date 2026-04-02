@@ -148,7 +148,7 @@ export default function Activity() {
 
   return (
     <div ref={containerRef} {...pullHandlers} className="min-h-screen bg-background animate-fade-in overflow-y-auto">
-      <div className="px-6 pt-12 pb-3">
+      <div className="px-6 pt-safe pb-3">
         <h1 className="font-serif text-[28px] font-bold tracking-[-0.01em] text-foreground">Activity</h1>
       </div>
 

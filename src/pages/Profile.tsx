@@ -107,7 +107,7 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-background animate-fade-in">
       {/* Header — tighter 8pt grid */}
-      <div className="px-5 pt-14 pb-4">
+      <div className="px-5 pt-safe pb-4">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3.5">
             <RitualAvatar

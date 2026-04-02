@@ -219,7 +219,7 @@ export default function Explore() {
         data-feed-header
       >
         {tab === "following" && (
-          <div className="px-5 pt-14 pb-2 flex items-start justify-between">
+          <div className="px-5 pt-safe pb-2 flex items-start justify-between">
             <div>
               <h1 className="text-[28px] font-serif font-bold text-foreground">Explore</h1>
               {todayPrompt && (
