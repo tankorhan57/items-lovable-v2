@@ -34,6 +34,7 @@ export default function Explore() {
   const [notePostId, setNotePostId] = useState<string | null>(null);
   const [noteOwnerId, setNoteOwnerId] = useState("");
   const [todayPrompt, setTodayPrompt] = useState<string | null>(null);
+  const [todayItemId, setTodayItemId] = useState<string | null>(null);
 
   // Appreciation state per post
   const [appreciated, setAppreciated] = useState<Record<string, boolean>>({});
