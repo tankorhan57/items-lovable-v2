@@ -52,8 +52,8 @@ export default function AppShell() {
   ];
 
   return (
-    <div className="flex min-h-[var(--app-shell-viewport-height)] flex-col bg-background">
-      <main className="flex-1 min-h-0 pb-app-nav">
+    <div className="flex h-[var(--app-shell-viewport-height)] overflow-hidden flex-col bg-background">
+      <main className="h-app min-h-0 overflow-y-auto overscroll-y-contain">
         <Outlet />
       </main>
 
