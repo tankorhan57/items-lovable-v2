@@ -125,14 +125,39 @@ export default function Profile() {
     );
   }
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [scrollY, setScrollY] = useState(0);
+
+  const handleScroll = useCallback(() => {
+    if (scrollRef.current) {
+      setScrollY(scrollRef.current.scrollTop);
+    }
+  }, []);
+
+  const headerOpacity = Math.max(0, 0.08 - scrollY * 0.0004);
+  const headerTranslate = scrollY * 0.35;
+
   return (
-    <div className="min-h-screen bg-background animate-fade-in">
+    <div
+      ref={scrollRef}
+      onScroll={handleScroll}
+      className="min-h-screen bg-background animate-fade-in overflow-y-auto"
+      style={{ height: "100dvh" }}
+    >
+      {/* Parallax gradient layer */}
+      <div
+        className="absolute inset-x-0 top-0 h-[280px] pointer-events-none transition-opacity duration-100"
+        style={{
+          background: `linear-gradient(to bottom, hsl(9 100% 58% / ${headerOpacity + 0.08}), transparent)`,
+          transform: `translateY(-${headerTranslate}px)`,
+          willChange: "transform, opacity",
+        }}
+      />
       {/* Header with warm gradient banner */}
       <div
-        className="px-5 pt-safe pb-4"
-        style={{
-          background: "linear-gradient(to bottom, hsl(9 100% 58% / 0.08), hsl(var(--background)))",
-        }}
+        ref={headerRef}
+        className="relative px-5 pt-safe pb-4"
       >
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3.5">
