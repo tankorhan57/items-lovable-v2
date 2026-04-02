@@ -43,6 +43,7 @@ export default function Capture() {
   const [city, setCity] = useState<string | null>(null);
   const [dailyWindow, setDailyWindow] = useState<DailyWindow | null>(null);
   const [windowLoaded, setWindowLoaded] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -100,6 +101,7 @@ export default function Capture() {
 
     // Load or create daily posting window
     await loadOrCreateWindow(today);
+    setInitialLoading(false);
   };
 
   const loadOrCreateWindow = async (today: string) => {
@@ -210,9 +212,17 @@ export default function Capture() {
     setGameDone(true);
   }, []);
 
+  if (initialLoading) {
+    return (
+      <div className="flex min-h-app items-center justify-center px-6 bg-background">
+        <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
   if (!prompt) {
     return (
-      <div className="flex min-h-app items-center justify-center px-6">
+      <div className="flex min-h-app items-center justify-center px-6 bg-background">
         <div className="text-center animate-fade-in">
           <h2 className="text-foreground mb-2">No prompt today</h2>
           <p className="text-meta">Check back soon — the next Item is on its way.</p>
