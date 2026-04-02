@@ -52,8 +52,8 @@ export default function AppShell() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <main className="flex-1 pb-[72px]">
+    <div className="flex min-h-[var(--app-shell-viewport-height)] flex-col bg-background">
+      <main className="flex-1 min-h-0 pb-app-nav">
         <Outlet />
       </main>
 
